@@ -1,0 +1,139 @@
+"use client";
+
+import { useEditorStore } from "@/store/editorStore";
+import { useCallback } from "react";
+
+interface ToolbarProps {
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onZoomFit: () => void;
+}
+
+export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit }: ToolbarProps) {
+  const activeImageId = useEditorStore((s) => s.activeImageId);
+  const images = useEditorStore((s) => s.images);
+  const undo = useEditorStore((s) => s.undo);
+  const redo = useEditorStore((s) => s.redo);
+  const resetImage = useEditorStore((s) => s.resetImage);
+
+  const activeImage = images.find((i) => i.id === activeImageId);
+
+  const canUndo = activeImage ? activeImage.historyIndex > 0 : false;
+  const canRedo = activeImage
+    ? activeImage.historyIndex < activeImage.settingsHistory.length - 1
+    : false;
+
+  const handleDownload = useCallback(() => {
+    if (!activeImageId) return;
+    const canvas = (window as any).__canvasRegistry?.get(activeImageId);
+    const img = activeImage;
+    if (!img) return;
+    const link = document.createElement("a");
+    link.href = img.previewUrl;
+    const ext = img.settings.background.mode === "remove" ? "png" : "jpg";
+    link.download = `elsa-${img.file.name.replace(/\.[^.]+$/, "")}.${ext}`;
+    link.click();
+  }, [activeImageId, activeImage]);
+
+  const iconBtn =
+    "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed";
+
+  return (
+    <header
+      className="flex items-center h-11 px-4 border-b shrink-0"
+      style={{ borderColor: "var(--border)", background: "var(--bg-panel)" }}
+    >
+      {/* Logo */}
+      <div className="flex items-center gap-2 mr-6">
+        <div className="w-6 h-6 rounded-md bg-accent flex items-center justify-center">
+          <span className="text-[var(--bg-base)] text-xs font-bold">E</span>
+        </div>
+        <span className="font-bold text-sm tracking-tight text-[var(--text-primary)]">
+          elsa
+        </span>
+      </div>
+
+      <div className="flex items-center gap-1">
+        {/* Undo */}
+        <button
+          className={iconBtn}
+          onClick={() => activeImageId && undo(activeImageId)}
+          disabled={!canUndo}
+          title="Undo"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M3 7v6h6" /><path d="M3 13a9 9 0 1 0 .75-3.69" />
+          </svg>
+        </button>
+
+        {/* Redo */}
+        <button
+          className={iconBtn}
+          onClick={() => activeImageId && redo(activeImageId)}
+          disabled={!canRedo}
+          title="Redo"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 7v6h-6" /><path d="M21 13a9 9 0 1 1-.75-3.69" />
+          </svg>
+        </button>
+
+        <div className="w-px h-5 bg-[var(--border-strong)] mx-1" />
+
+        {/* Reset */}
+        <button
+          className={iconBtn}
+          onClick={() => activeImageId && resetImage(activeImageId)}
+          disabled={!activeImageId}
+          title="Reset image"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Zoom controls */}
+      <div className="flex items-center gap-1 mr-3">
+        <button className={iconBtn} onClick={onZoomOut} title="Zoom out">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35M8 11h6" />
+          </svg>
+        </button>
+        <button
+          className="text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-1"
+          onClick={onZoomFit}
+        >
+          fit
+        </button>
+        <button className={iconBtn} onClick={onZoomIn} title="Zoom in">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Download */}
+      <button
+        onClick={handleDownload}
+        disabled={!activeImageId}
+        className={`
+          flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold
+          bg-accent text-[var(--bg-base)] hover:bg-[var(--accent-dim)]
+          transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed
+        `}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        export
+      </button>
+    </header>
+  );
+}
