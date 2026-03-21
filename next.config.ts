@@ -13,7 +13,14 @@ const nextConfig: NextConfig = {
     ];
   },
   // turbopack is the default bundler in Next.js 16 for dev
-  turbopack: {},
+  turbopack: {
+    resolveAlias: {
+      // Turbopack picks the ESM bundle which has a static import from @mediapipe/selfie_segmentation
+      // whose CJS IIFE exports Turbopack can't statically analyze.
+      // Force the CJS build instead — require() is resolved at runtime, no static export analysis.
+      "@tensorflow-models/body-segmentation": "@tensorflow-models/body-segmentation/dist/index.js",
+    },
+  },
   // webpack config applies for production builds
   webpack(config) {
     config.resolve.fallback = { fs: false, path: false };
