@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import Toolbar from "./Toolbar";
 import CanvasPreview from "./CanvasPreview";
 import ProcessingOverlay from "./ProcessingOverlay";
@@ -12,10 +12,13 @@ import FaceEnhancePanel from "@/components/sidebar/FaceEnhancePanel";
 import BatchPanel from "@/components/batch/BatchPanel";
 import DropZone from "@/components/upload/DropZone";
 import { useEditorStore } from "@/store/editorStore";
+import { useImageProcessor } from "@/hooks/useImageProcessor";
 
 export default function EditorShell() {
   const images = useEditorStore((s) => s.images);
   const hasImages = images.length > 0;
+
+  useImageProcessor();
 
   const [zoom, setZoom] = useState(1);
 
@@ -48,7 +51,7 @@ export default function EditorShell() {
 
         {/* Main canvas area */}
         <main className="flex-1 relative flex flex-col min-w-0">
-          {hasImages ? <CanvasPreview /> : <DropZone />}
+          {hasImages ? <CanvasPreview zoom={zoom} onZoomChange={setZoom} /> : <DropZone />}
           <ProcessingOverlay />
         </main>
 

@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { canvasRegistry } from "@/store/editorStore";
 import { useEditorStore } from "@/store/editorStore";
 
-export default function CanvasPreview() {
+interface CanvasPreviewProps {
+  zoom: number;
+  onZoomChange: (zoom: number) => void;
+}
+
+export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps) {
   const activeImageId = useEditorStore((s) => s.activeImageId);
   const activeImage = useEditorStore((s) =>
     s.images.find((i) => i.id === activeImageId)
@@ -12,7 +17,6 @@ export default function CanvasPreview() {
 
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1);
 
   // Draw the working canvas onto the display canvas whenever previewUrl changes
   useEffect(() => {
@@ -38,13 +42,13 @@ export default function CanvasPreview() {
       (ch - 48) / activeImage.height,
       1
     );
-    setZoom(fitZoom);
+    onZoomChange(fitZoom);
   }, [activeImage?.id, activeImage?.width, activeImage?.height]);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? -0.1 : 0.1;
-    setZoom((z) => Math.max(0.1, Math.min(4, z + delta)));
+    onZoomChange(Math.max(0.1, Math.min(4, zoom + delta)));
   };
 
   if (!activeImage) {
