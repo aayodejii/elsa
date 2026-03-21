@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { DEFAULT_SETTINGS, EditorSettings, ImageItem, ProcessingStatus } from "@/types/editor";
+import { DEFAULT_SETTINGS, EditorSettings, ProcessingStatus } from "@/types/editor";
 
 export const canvasRegistry = new Map<string, HTMLCanvasElement>();
 export const bitmapRegistry = new Map<string, ImageBitmap>();
