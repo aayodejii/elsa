@@ -6,6 +6,7 @@ import { useCanvasWorker } from "./useCanvasWorker";
 import { EditorSettings } from "@/types/editor";
 import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
 import { buildSkinMask, buildBlurredCopy } from "@/lib/ai/skinRetouch";
+import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur } from "@/lib/ai/segmentation";
 
 function isManualDefault(m: EditorSettings["manual"]) {
   return (
@@ -48,7 +49,17 @@ export function useImageProcessor() {
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(bitmap, 0, 0);
 
-        // Step 2: skin retouching
+        // Step 2: background removal / blur
+        if (settings.background.mode !== "none") {
+          const mask = await getSegmentationMask(canvas, imageId);
+          if (settings.background.mode === "remove") {
+            applyBackgroundRemove(canvas, mask);
+          } else {
+            applyBackgroundBlur(canvas, mask, settings.background.blurRadius);
+          }
+        }
+
+        // Step 3: skin retouching
         if (settings.skinRetouch.enabled && settings.skinRetouch.strength > 0) {
           const landmarks = await detectFaceLandmarks(canvas, imageId);
           if (landmarks) {
@@ -67,7 +78,7 @@ export function useImageProcessor() {
           }
         }
 
-        // Step 3: apply manual filters if any are non-default
+        // Step 4: apply manual filters if any are non-default
         if (!isManualDefault(settings.manual)) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -109,7 +120,7 @@ export function useImageProcessor() {
           ctx.putImageData(result, 0, 0);
         }
 
-        // Step 4: export preview
+        // Step 5: export preview
         const format =
           settings.background.mode === "remove" ? "image/png" : "image/jpeg";
         const quality = format === "image/jpeg" ? 0.88 : undefined;
