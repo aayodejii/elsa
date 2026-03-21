@@ -7,6 +7,7 @@ import { EditorSettings } from "@/types/editor";
 import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
 import { buildSkinMask, buildBlurredCopy } from "@/lib/ai/skinRetouch";
 import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur } from "@/lib/ai/segmentation";
+import { applyFaceBrightening, applyEyeEnhancement, applyTeethWhitening } from "@/lib/ai/faceEnhance";
 
 function isManualDefault(m: EditorSettings["manual"]) {
   return (
@@ -59,7 +60,20 @@ export function useImageProcessor() {
           }
         }
 
-        // Step 3: skin retouching
+        // Step 3: face enhancement
+        if (settings.faceEnhance.enabled) {
+          const landmarks = await detectFaceLandmarks(canvas, imageId);
+          if (landmarks) {
+            if (settings.faceEnhance.brightness > 0)
+              applyFaceBrightening(canvas, landmarks, settings.faceEnhance.brightness);
+            if (settings.faceEnhance.eyeEnhance > 0)
+              applyEyeEnhancement(canvas, landmarks, settings.faceEnhance.eyeEnhance);
+            if (settings.faceEnhance.teethWhiten > 0)
+              applyTeethWhitening(canvas, landmarks, settings.faceEnhance.teethWhiten);
+          }
+        }
+
+        // Step 4: skin retouching
         if (settings.skinRetouch.enabled && settings.skinRetouch.strength > 0) {
           const landmarks = await detectFaceLandmarks(canvas, imageId);
           if (landmarks) {
@@ -78,7 +92,7 @@ export function useImageProcessor() {
           }
         }
 
-        // Step 4: apply manual filters if any are non-default
+        // Step 5: apply manual filters if any are non-default
         if (!isManualDefault(settings.manual)) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -120,7 +134,7 @@ export function useImageProcessor() {
           ctx.putImageData(result, 0, 0);
         }
 
-        // Step 5: export preview
+        // Step 6: export preview
         const format =
           settings.background.mode === "remove" ? "image/png" : "image/jpeg";
         const quality = format === "image/jpeg" ? 0.88 : undefined;
