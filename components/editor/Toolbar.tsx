@@ -1,6 +1,7 @@
 "use client";
 
 import { useEditorStore } from "@/store/editorStore";
+import { downloadSingle } from "@/lib/zip/batchExport";
 import { useCallback } from "react";
 
 interface ToolbarProps {
@@ -24,16 +25,9 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit }: ToolbarProps
     : false;
 
   const handleDownload = useCallback(() => {
-    if (!activeImageId) return;
-    const canvas = (window as any).__canvasRegistry?.get(activeImageId);
-    const img = activeImage;
-    if (!img) return;
-    const link = document.createElement("a");
-    link.href = img.previewUrl;
-    const ext = img.settings.background.mode === "remove" ? "png" : "jpg";
-    link.download = `elsa-${img.file.name.replace(/\.[^.]+$/, "")}.${ext}`;
-    link.click();
-  }, [activeImageId, activeImage]);
+    if (!activeImage) return;
+    downloadSingle(activeImage);
+  }, [activeImage]);
 
   const iconBtn =
     "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed";
