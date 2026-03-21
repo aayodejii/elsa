@@ -12,6 +12,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // turbopack is the default bundler in Next.js 16 for dev
+  turbopack: {},
+  // webpack config applies for production builds
   webpack(config) {
     config.resolve.fallback = { fs: false, path: false };
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
