@@ -27,6 +27,8 @@ export function useImageProcessor() {
   );
   const updatePreview = useEditorStore((s) => s.updatePreview);
   const setStatus = useEditorStore((s) => s.setStatus);
+  const setIsProcessing = useEditorStore((s) => s.setIsProcessing);
+  const setProcessingProgress = useEditorStore((s) => s.setProcessingProgress);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settingsRef = useRef(activeImage?.settings);
@@ -155,13 +157,18 @@ export function useImageProcessor() {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      processImage(activeImageId, activeImage.settings);
+      setIsProcessing(true);
+      setProcessingProgress(0);
+      processImage(activeImageId, activeImage.settings).finally(() => {
+        setIsProcessing(false);
+        setProcessingProgress(100);
+      });
     }, 300);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [activeImageId, activeImage?.settings, processImage]);
+  }, [activeImageId, activeImage?.settings, processImage, setIsProcessing, setProcessingProgress]);
 
   return { processImage };
 }
