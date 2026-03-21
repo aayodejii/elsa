@@ -26,10 +26,14 @@ export default function EditorShell() {
   const { processImage } = useImageProcessor();
 
   const [zoom, setZoom] = useState(1);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [showBatch, setShowBatch] = useState(true);
 
   const handleZoomIn = useCallback(() => setZoom((z) => Math.min(4, z + 0.25)), []);
   const handleZoomOut = useCallback(() => setZoom((z) => Math.max(0.1, z - 0.25)), []);
   const handleZoomFit = useCallback(() => setZoom(1), []);
+  const handleToggleSidebar = useCallback(() => setShowSidebar((v) => !v), []);
+  const handleToggleBatch = useCallback(() => setShowBatch((v) => !v), []);
 
   const handleProcessAll = useCallback(async () => {
     if (images.length === 0) return;
@@ -52,16 +56,26 @@ export default function EditorShell() {
 
   return (
     <div className="h-full flex flex-col" style={{ background: "var(--bg-base)" }}>
-      <Toolbar onZoomIn={handleZoomIn} onZoomOut={handleZoomOut} onZoomFit={handleZoomFit} />
+      <Toolbar
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onZoomFit={handleZoomFit}
+        showSidebar={showSidebar}
+        onToggleSidebar={handleToggleSidebar}
+        showBatch={showBatch}
+        onToggleBatch={handleToggleBatch}
+      />
 
       <div className="flex flex-1 min-h-0">
-        {/* Left sidebar */}
-        <SidebarPanel
-          skinRetouchPanel={<SkinRetouchPanel />}
-          backgroundPanel={<BackgroundPanel />}
-          faceEnhancePanel={<FaceEnhancePanel />}
-          manualAdjustPanel={<ManualAdjustPanel />}
-        />
+        {/* Left sidebar — always visible on lg+, toggled on smaller screens */}
+        <div className={`${showSidebar ? "flex" : "hidden"} lg:flex`}>
+          <SidebarPanel
+            skinRetouchPanel={<SkinRetouchPanel />}
+            backgroundPanel={<BackgroundPanel />}
+            faceEnhancePanel={<FaceEnhancePanel />}
+            manualAdjustPanel={<ManualAdjustPanel />}
+          />
+        </div>
 
         {/* Main canvas area */}
         <main className="flex-1 relative flex flex-col min-w-0">
@@ -69,8 +83,10 @@ export default function EditorShell() {
           <ProcessingOverlay />
         </main>
 
-        {/* Right batch panel */}
-        <BatchPanel onProcessAll={handleProcessAll} onDownloadAll={handleDownloadAll} />
+        {/* Right batch panel — always visible on lg+, toggled on smaller screens */}
+        <div className={`${showBatch ? "flex" : "hidden"} lg:flex`}>
+          <BatchPanel onProcessAll={handleProcessAll} onDownloadAll={handleDownloadAll} />
+        </div>
       </div>
     </div>
   );
