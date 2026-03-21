@@ -4,6 +4,8 @@ import { useEffect, useRef, useCallback } from "react";
 import { useEditorStore, canvasRegistry, bitmapRegistry } from "@/store/editorStore";
 import { useCanvasWorker } from "./useCanvasWorker";
 import { EditorSettings } from "@/types/editor";
+import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
+import { buildSkinMask, buildBlurredCopy } from "@/lib/ai/skinRetouch";
 
 function isManualDefault(m: EditorSettings["manual"]) {
   return (
@@ -46,7 +48,26 @@ export function useImageProcessor() {
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(bitmap, 0, 0);
 
-        // Step 2: apply manual filters if any are non-default
+        // Step 2: skin retouching
+        if (settings.skinRetouch.enabled && settings.skinRetouch.strength > 0) {
+          const landmarks = await detectFaceLandmarks(canvas, imageId);
+          if (landmarks) {
+            const maskData = buildSkinMask(canvas.width, canvas.height, landmarks);
+            const blurCanvas = buildBlurredCopy(canvas, settings.skinRetouch.strength);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const blurData = blurCanvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+            const result = await runWorker({
+              type: "SKIN_RETOUCH",
+              imageData,
+              blurData,
+              maskData,
+              strength: settings.skinRetouch.strength,
+            });
+            ctx.putImageData(result, 0, 0);
+          }
+        }
+
+        // Step 3: apply manual filters if any are non-default
         if (!isManualDefault(settings.manual)) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -88,7 +109,7 @@ export function useImageProcessor() {
           ctx.putImageData(result, 0, 0);
         }
 
-        // Step 3: export preview
+        // Step 4: export preview
         const format =
           settings.background.mode === "remove" ? "image/png" : "image/jpeg";
         const quality = format === "image/jpeg" ? 0.88 : undefined;
