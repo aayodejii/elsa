@@ -1,0 +1,144 @@
+"use client";
+
+import { useState, ReactNode } from "react";
+
+interface AccordionSectionProps {
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+  defaultOpen?: boolean;
+  badge?: string;
+}
+
+function AccordionSection({ title, icon, children, defaultOpen = false, badge }: AccordionSectionProps) {
+  const [open, setOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border-b" style={{ borderColor: "var(--border)" }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.02] transition-colors group"
+      >
+        <span className="text-[var(--text-muted)] group-hover:text-[var(--text-secondary)] transition-colors">
+          {icon}
+        </span>
+        <span className="flex-1 text-xs font-semibold uppercase tracking-widest text-[var(--text-secondary)]">
+          {title}
+        </span>
+        {badge && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-accent/10 text-accent">
+            {badge}
+          </span>
+        )}
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={`text-[var(--text-muted)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <div
+        className="overflow-hidden transition-all duration-200 ease-in-out"
+        style={{ maxHeight: open ? "600px" : "0px" }}
+      >
+        <div className="px-4 pb-4 pt-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+interface SidebarPanelProps {
+  skinRetouchPanel: ReactNode;
+  backgroundPanel: ReactNode;
+  faceEnhancePanel: ReactNode;
+  manualAdjustPanel: ReactNode;
+}
+
+export default function SidebarPanel({
+  skinRetouchPanel,
+  backgroundPanel,
+  faceEnhancePanel,
+  manualAdjustPanel,
+}: SidebarPanelProps) {
+  return (
+    <aside
+      className="w-72 flex flex-col border-r overflow-y-auto shrink-0"
+      style={{
+        background: "var(--bg-panel)",
+        borderColor: "var(--border)",
+      }}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+        <p className="text-[10px] font-mono uppercase tracking-widest text-[var(--text-muted)]">
+          tools
+        </p>
+      </div>
+
+      <AccordionSection
+        title="Background"
+        defaultOpen
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M3 9h18M9 21V9" />
+          </svg>
+        }
+        badge="ai"
+      >
+        {backgroundPanel}
+      </AccordionSection>
+
+      <AccordionSection
+        title="Skin"
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M8 14s-2 1-2 4h12c0-3-2-4-2-4" />
+          </svg>
+        }
+        badge="ai"
+      >
+        {skinRetouchPanel}
+      </AccordionSection>
+
+      <AccordionSection
+        title="Face"
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9 10h.01M15 10h.01M9.5 15.5s1 1.5 2.5 1.5 2.5-1.5 2.5-1.5" />
+          </svg>
+        }
+        badge="ai"
+      >
+        {faceEnhancePanel}
+      </AccordionSection>
+
+      <AccordionSection
+        title="Adjustments"
+        defaultOpen
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="4" y1="6" x2="20" y2="6" />
+            <line x1="4" y1="12" x2="20" y2="12" />
+            <line x1="4" y1="18" x2="20" y2="18" />
+            <circle cx="8" cy="6" r="2" fill="currentColor" />
+            <circle cx="16" cy="12" r="2" fill="currentColor" />
+            <circle cx="10" cy="18" r="2" fill="currentColor" />
+          </svg>
+        }
+      >
+        {manualAdjustPanel}
+      </AccordionSection>
+    </aside>
+  );
+}
