@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, ReactNode } from "react";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 interface AccordionSectionProps {
   title: string;
@@ -94,7 +95,7 @@ export default function SidebarPanel({
         }
         badge="ai"
       >
-        {backgroundPanel}
+        <ErrorBoundary label="background">{backgroundPanel}</ErrorBoundary>
       </AccordionSection>
 
       <AccordionSection
@@ -107,7 +108,7 @@ export default function SidebarPanel({
         }
         badge="ai"
       >
-        {skinRetouchPanel}
+        <ErrorBoundary label="skin">{skinRetouchPanel}</ErrorBoundary>
       </AccordionSection>
 
       <AccordionSection
@@ -120,7 +121,7 @@ export default function SidebarPanel({
         }
         badge="ai"
       >
-        {faceEnhancePanel}
+        <ErrorBoundary label="face">{faceEnhancePanel}</ErrorBoundary>
       </AccordionSection>
 
       <AccordionSection
