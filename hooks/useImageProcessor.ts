@@ -45,6 +45,7 @@ export function useImageProcessor() {
   const setProcessingProgress = useEditorStore((s) => s.setProcessingProgress);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const settingsRef = useRef(activeImage?.settings);
 
   useEffect(() => {
@@ -198,9 +199,15 @@ export function useImageProcessor() {
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      setIsProcessing(true);
-      setProcessingProgress(0);
+      // Only show overlay if processing takes >150ms (cached AI is near-instant)
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+      overlayTimerRef.current = setTimeout(() => {
+        setIsProcessing(true);
+        setProcessingProgress(0);
+      }, 150);
+
       processImage(activeImageId, activeImage.settings).finally(() => {
+        if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
         setIsProcessing(false);
         setProcessingProgress(100);
       });
@@ -208,6 +215,7 @@ export function useImageProcessor() {
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
     };
   }, [activeImageId, activeImage?.settings, processImage, setIsProcessing, setProcessingProgress]);
 
