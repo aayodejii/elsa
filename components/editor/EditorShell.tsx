@@ -5,6 +5,7 @@ import Toolbar from "./Toolbar";
 import CanvasPreview from "./CanvasPreview";
 import ProcessingOverlay from "./ProcessingOverlay";
 import SidebarPanel from "@/components/sidebar/SidebarPanel";
+import PresetPanel from "@/components/sidebar/PresetPanel";
 import ManualAdjustPanel from "@/components/sidebar/ManualAdjustPanel";
 import SkinRetouchPanel from "@/components/sidebar/SkinRetouchPanel";
 import BackgroundPanel from "@/components/sidebar/BackgroundPanel";
@@ -70,6 +71,7 @@ export default function EditorShell() {
         {/* Left sidebar — always visible on lg+, toggled on smaller screens */}
         <div className={`${showSidebar ? "flex" : "hidden"} lg:flex`}>
           <SidebarPanel
+            presetPanel={<PresetPanel />}
             skinRetouchPanel={<SkinRetouchPanel />}
             backgroundPanel={<BackgroundPanel />}
             faceEnhancePanel={<FaceEnhancePanel />}
