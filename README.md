@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# elsa
+
+A browser-based AI portrait photo editor. All processing runs client-side, no uploads, no server or subscriptions.
+
+![elsa demo](public/img/elsa-demo.png)
+
+## Features
+
+- **Background Remove / Blur** — MediaPipe segmentation isolates the subject for transparent backgrounds or bokeh-style blur
+- **Skin Retouching** — Bilateral-filter approximation smooths skin while preserving edges and texture
+- **Face Enhancement** — Brighten faces, boost eye contrast, whiten teeth with landmark-based masks
+- **Manual Adjustments** — Brightness, contrast, saturation, hue, and sharpness sliders processed in a Web Worker
+- **Batch Processing** — Upload multiple images, apply settings, process all, and download as ZIP
+- **Undo / Redo** — Full settings history per image
+- **Privacy First** — Everything runs in your browser. Images never leave your device.
+
+## Tech Stack
+
+- [Next.js 16](https://nextjs.org) (App Router + Turbopack)
+- [TensorFlow.js](https://www.tensorflow.org/js) + [MediaPipe](https://mediapipe.dev) for AI inference
+- [face-api](https://github.com/vladmandic/face-api) for face landmark detection
+- [Zustand](https://zustand.docs.pmnd.rs) for state management
+- [Tailwind CSS v4](https://tailwindcss.com) for styling
+- Web Workers for off-main-thread pixel processing
+- [JSZip](https://stuk.github.io/jszip/) for batch export
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+git clone https://github.com/aayodejii/elsa.git
+cd elsa
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and drop a portrait photo to start editing.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How It Works
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Upload** — Drop images onto the canvas. Each is stored as an `ImageBitmap` (never mutated).
+2. **Edit** — Adjust sliders in the sidebar. Settings changes are debounced and re-run the processing pipeline from the original bitmap.
+3. **AI Pipeline** — Background segmentation, face detection, and skin masks are cached per image. Only the first run loads models; subsequent slider changes reuse cached results.
+4. **Export** — Download the active image or batch-export all as a ZIP.
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Or deploy to [Vercel](https://vercel.com) — works out of the box with Next.js.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contributing
 
-## Deploy on Vercel
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+AGPL-3.0
