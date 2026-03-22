@@ -2,6 +2,7 @@
 
 import { useEditorStore } from "@/store/editorStore";
 import { downloadSingle } from "@/lib/zip/batchExport";
+import { computeAutoEnhanceSettings } from "@/lib/ai/autoEnhance";
 import { useCallback } from "react";
 
 interface ToolbarProps {
@@ -22,6 +23,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
   const resetImage = useEditorStore((s) => s.resetImage);
   const compareMode = useEditorStore((s) => s.compareMode);
   const setCompareMode = useEditorStore((s) => s.setCompareMode);
+  const updateSettings = useEditorStore((s) => s.updateSettings);
 
   const activeImage = images.find((i) => i.id === activeImageId);
 
@@ -34,6 +36,12 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
     if (!activeImage) return;
     downloadSingle(activeImage);
   }, [activeImage]);
+
+  const handleAutoEnhance = useCallback(() => {
+    if (!activeImageId) return;
+    const settings = computeAutoEnhanceSettings(activeImageId);
+    if (settings) updateSettings(activeImageId, settings);
+  }, [activeImageId, updateSettings]);
 
   const iconBtn =
     "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed";
@@ -90,6 +98,20 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="3" width="20" height="18" rx="2" />
             <line x1="12" y1="3" x2="12" y2="21" />
+          </svg>
+        </button>
+
+        {/* Auto-enhance */}
+        <button
+          className={iconBtn}
+          onClick={handleAutoEnhance}
+          disabled={!activeImageId}
+          title="Auto-enhance"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2z" />
+            <path d="M5 16l1 3 3-1-1-3-3 1z" />
+            <path d="M18 14l1 3 3-1-1-3-3 1z" />
           </svg>
         </button>
 
