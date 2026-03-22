@@ -20,6 +20,8 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
   const resetImage = useEditorStore((s) => s.resetImage);
+  const compareMode = useEditorStore((s) => s.compareMode);
+  const setCompareMode = useEditorStore((s) => s.setCompareMode);
 
   const activeImage = images.find((i) => i.id === activeImageId);
 
@@ -77,6 +79,19 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
         </button>
 
         <div className="w-px h-5 bg-[var(--border-strong)] mx-1" />
+
+        {/* Compare */}
+        <button
+          className={`${iconBtn} ${compareMode ? "text-accent bg-[var(--bg-surface)]" : ""}`}
+          onClick={() => setCompareMode(!compareMode)}
+          disabled={!activeImageId}
+          title="Before / after"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="18" rx="2" />
+            <line x1="12" y1="3" x2="12" y2="21" />
+          </svg>
+        </button>
 
         {/* Reset */}
         <button

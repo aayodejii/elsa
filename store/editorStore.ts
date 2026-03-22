@@ -24,6 +24,7 @@ interface EditorStore {
   activeImageId: string | null;
   isProcessing: boolean;
   processingProgress: number;
+  compareMode: boolean;
 
   addImages: (files: File[]) => Promise<void>;
   setActiveImage: (id: string) => void;
@@ -32,6 +33,7 @@ interface EditorStore {
   setStatus: (id: string, status: ProcessingStatus) => void;
   setProcessingProgress: (progress: number) => void;
   setIsProcessing: (v: boolean) => void;
+  setCompareMode: (v: boolean) => void;
   undo: (id: string) => EditorSettings | null;
   redo: (id: string) => EditorSettings | null;
   resetImage: (id: string) => void;
@@ -60,6 +62,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   activeImageId: null,
   isProcessing: false,
   processingProgress: 0,
+  compareMode: false,
 
   addImages: async (files) => {
     const newItems: ImageItemState[] = [];
@@ -147,6 +150,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   setProcessingProgress: (progress) => set({ processingProgress: progress }),
   setIsProcessing: (v) => set({ isProcessing: v }),
+  setCompareMode: (v) => set({ compareMode: v }),
 
   undo: (id) => {
     const images = get().images;
