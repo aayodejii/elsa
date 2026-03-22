@@ -19,6 +19,20 @@ function isManualDefault(m: EditorSettings["manual"]) {
   );
 }
 
+/** Wraps a promise with a timeout so AI steps cannot hang forever. */
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`${label} timed out after ${ms}ms`)),
+      ms
+    );
+    promise.then(
+      (v) => { clearTimeout(timer); resolve(v); },
+      (e) => { clearTimeout(timer); reject(e); }
+    );
+  });
+}
+
 export function useImageProcessor() {
   const { runWorker } = useCanvasWorker();
   const activeImageId = useEditorStore((s) => s.activeImageId);
@@ -44,6 +58,7 @@ export function useImageProcessor() {
       if (!bitmap || !canvas) return;
 
       setStatus(imageId, "processing");
+      setProcessingProgress(5);
 
       try {
         // Step 1: reset canvas from original bitmap
@@ -51,47 +66,72 @@ export function useImageProcessor() {
         canvas.height = bitmap.height;
         const ctx = canvas.getContext("2d")!;
         ctx.drawImage(bitmap, 0, 0);
+        setProcessingProgress(10);
 
         // Step 2: background removal / blur
         if (settings.background.mode !== "none") {
-          const mask = await getSegmentationMask(canvas, imageId);
-          if (settings.background.mode === "remove") {
-            applyBackgroundRemove(canvas, mask);
-          } else {
-            applyBackgroundBlur(canvas, mask, settings.background.blurRadius);
+          try {
+            const mask = await withTimeout(
+              getSegmentationMask(canvas, imageId), 30_000, "Background segmentation"
+            );
+            setProcessingProgress(40);
+            if (settings.background.mode === "remove") {
+              applyBackgroundRemove(canvas, mask);
+            } else {
+              applyBackgroundBlur(canvas, mask, settings.background.blurRadius);
+            }
+          } catch (err) {
+            console.warn("Background segmentation failed, skipping:", err);
           }
+          setProcessingProgress(50);
         }
 
         // Step 3: face enhancement
         if (settings.faceEnhance.enabled) {
-          const landmarks = await detectFaceLandmarks(canvas, imageId);
-          if (landmarks) {
-            if (settings.faceEnhance.brightness > 0)
-              applyFaceBrightening(canvas, landmarks, settings.faceEnhance.brightness);
-            if (settings.faceEnhance.eyeEnhance > 0)
-              applyEyeEnhancement(canvas, landmarks, settings.faceEnhance.eyeEnhance);
-            if (settings.faceEnhance.teethWhiten > 0)
-              applyTeethWhitening(canvas, landmarks, settings.faceEnhance.teethWhiten);
+          try {
+            const landmarks = await withTimeout(
+              detectFaceLandmarks(canvas, imageId), 30_000, "Face detection"
+            );
+            setProcessingProgress(65);
+            if (landmarks) {
+              if (settings.faceEnhance.brightness > 0)
+                applyFaceBrightening(canvas, landmarks, settings.faceEnhance.brightness);
+              if (settings.faceEnhance.eyeEnhance > 0)
+                applyEyeEnhancement(canvas, landmarks, settings.faceEnhance.eyeEnhance);
+              if (settings.faceEnhance.teethWhiten > 0)
+                applyTeethWhitening(canvas, landmarks, settings.faceEnhance.teethWhiten);
+            }
+          } catch (err) {
+            console.warn("Face enhancement failed, skipping:", err);
           }
+          setProcessingProgress(70);
         }
 
         // Step 4: skin retouching
         if (settings.skinRetouch.enabled && settings.skinRetouch.strength > 0) {
-          const landmarks = await detectFaceLandmarks(canvas, imageId);
-          if (landmarks) {
-            const maskData = buildSkinMask(canvas.width, canvas.height, landmarks);
-            const blurCanvas = buildBlurredCopy(canvas, settings.skinRetouch.strength);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const blurData = blurCanvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
-            const result = await runWorker({
-              type: "SKIN_RETOUCH",
-              imageData,
-              blurData,
-              maskData,
-              strength: settings.skinRetouch.strength,
-            });
-            ctx.putImageData(result, 0, 0);
+          try {
+            const landmarks = await withTimeout(
+              detectFaceLandmarks(canvas, imageId), 30_000, "Face detection (skin retouch)"
+            );
+            setProcessingProgress(80);
+            if (landmarks) {
+              const maskData = buildSkinMask(canvas.width, canvas.height, landmarks);
+              const blurCanvas = buildBlurredCopy(canvas, settings.skinRetouch.strength);
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const blurData = blurCanvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height);
+              const result = await runWorker({
+                type: "SKIN_RETOUCH",
+                imageData,
+                blurData,
+                maskData,
+                strength: settings.skinRetouch.strength,
+              });
+              ctx.putImageData(result, 0, 0);
+            }
+          } catch (err) {
+            console.warn("Skin retouching failed, skipping:", err);
           }
+          setProcessingProgress(88);
         }
 
         // Step 5: apply manual filters if any are non-default
@@ -134,6 +174,7 @@ export function useImageProcessor() {
           }
 
           ctx.putImageData(result, 0, 0);
+          setProcessingProgress(95);
         }
 
         // Step 6: export preview
@@ -148,7 +189,7 @@ export function useImageProcessor() {
         setStatus(imageId, "error");
       }
     },
-    [runWorker, updatePreview, setStatus]
+    [runWorker, updatePreview, setStatus, setProcessingProgress]
   );
 
   // Debounced auto-process when active image settings change

@@ -25,6 +25,7 @@ interface WorkerResponse {
 export function useCanvasWorker() {
   const workerRef = useRef<Worker | null>(null);
   const pendingRef = useRef<((data: ImageData) => void) | null>(null);
+  const rejectRef = useRef<((err: unknown) => void) | null>(null);
 
   useEffect(() => {
     const worker = new Worker(
@@ -35,6 +36,15 @@ export function useCanvasWorker() {
       if (e.data.type === "RESULT" && pendingRef.current) {
         pendingRef.current(e.data.imageData);
         pendingRef.current = null;
+        rejectRef.current = null;
+      }
+    };
+
+    worker.onerror = (e) => {
+      if (rejectRef.current) {
+        rejectRef.current(new Error(e.message ?? "worker error"));
+        pendingRef.current = null;
+        rejectRef.current = null;
       }
     };
 
@@ -47,6 +57,7 @@ export function useCanvasWorker() {
       const worker = workerRef.current;
       if (!worker) return reject(new Error("worker not ready"));
       pendingRef.current = resolve;
+      rejectRef.current = reject;
 
       const transferables: Transferable[] = [request.imageData.data.buffer];
       if (request.type === "SKIN_RETOUCH") {

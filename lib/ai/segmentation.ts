@@ -1,21 +1,20 @@
 import { SegmentationMask } from "@/types/ai";
+import { ensureTfReady } from "./tfBackend";
 
 type Segmenter = Awaited<ReturnType<typeof import("@tensorflow-models/body-segmentation").createSegmenter>>;
 
 let segmenter: Segmenter | null = null;
-let loading = false;
 let loadPromise: Promise<Segmenter> | null = null;
 
 async function getSegmenter(): Promise<Segmenter> {
   if (segmenter) return segmenter;
   if (loadPromise) return loadPromise;
 
-  loading = true;
   loadPromise = (async () => {
+    // Use the shared TF.js backend initialization (no double-init)
+    await ensureTfReady();
+
     const bodySegmentation = await import("@tensorflow-models/body-segmentation");
-    await import("@tensorflow/tfjs-backend-webgl");
-    const tf = await import("@tensorflow/tfjs");
-    await tf.ready();
 
     const model = await bodySegmentation.createSegmenter(
       bodySegmentation.SupportedModels.MediaPipeSelfieSegmentation,
@@ -27,7 +26,6 @@ async function getSegmenter(): Promise<Segmenter> {
       }
     );
     segmenter = model;
-    loading = false;
     return model;
   })();
 

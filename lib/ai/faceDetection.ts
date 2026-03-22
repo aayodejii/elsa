@@ -1,10 +1,13 @@
-import * as faceapi from "face-api.js";
+import * as faceapi from "@vladmandic/face-api";
 import { FaceLandmarkResult } from "@/types/ai";
+import { ensureTfReady } from "./tfBackend";
 
 let modelsLoaded = false;
 
 export async function loadFaceApiModels(): Promise<void> {
   if (modelsLoaded) return;
+  // Ensure the TF.js WebGL backend is ready before loading face-api models
+  await ensureTfReady();
   await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
   await faceapi.nets.faceLandmark68TinyNet.loadFromUri("/models");
   modelsLoaded = true;
@@ -35,13 +38,15 @@ export async function detectFaceLandmarks(
 
   const pts = detection.landmarks.positions;
 
+  const toXY = (p: { x: number; y: number }) => ({ x: p.x, y: p.y });
+
   const result: FaceLandmarkResult = {
-    jawPoints: pts.slice(0, 17).map((p) => ({ x: p.x, y: p.y })),
-    leftEye: pts.slice(36, 42).map((p) => ({ x: p.x, y: p.y })),
-    rightEye: pts.slice(42, 48).map((p) => ({ x: p.x, y: p.y })),
-    outerLip: pts.slice(48, 60).map((p) => ({ x: p.x, y: p.y })),
-    innerLip: pts.slice(60, 68).map((p) => ({ x: p.x, y: p.y })),
-    nose: pts.slice(27, 36).map((p) => ({ x: p.x, y: p.y })),
+    jawPoints: pts.slice(0, 17).map(toXY),
+    leftEye: pts.slice(36, 42).map(toXY),
+    rightEye: pts.slice(42, 48).map(toXY),
+    outerLip: pts.slice(48, 60).map(toXY),
+    innerLip: pts.slice(60, 68).map(toXY),
+    nose: pts.slice(27, 36).map(toXY),
     faceBox: {
       x: detection.detection.box.x,
       y: detection.detection.box.y,
