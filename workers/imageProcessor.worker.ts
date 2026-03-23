@@ -14,7 +14,16 @@ interface SkinRetouchMessage {
   strength: number;
 }
 
-type WorkerMessage = ManualFilterMessage | SkinRetouchMessage;
+interface FreqSepMessage {
+  type: "FREQ_SEP";
+  imageData: ImageData;
+  blurSmall: ImageData;
+  blurLarge: ImageData;
+  maskData: ImageData; // skin mask — alpha channel = skin weight
+  strength: number;
+}
+
+type WorkerMessage = ManualFilterMessage | SkinRetouchMessage | FreqSepMessage;
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   const rn = r / 255, gn = g / 255, bn = b / 255;
@@ -166,6 +175,35 @@ function applySkinRetouch(
   return new ImageData(out, imageData.width, imageData.height);
 }
 
+function applyFreqSep(
+  imageData: ImageData,
+  blurSmall: ImageData,
+  blurLarge: ImageData,
+  maskData: ImageData,
+  strength: number
+): ImageData {
+  const src = imageData.data;
+  const bs = blurSmall.data;
+  const bl = blurLarge.data;
+  const mask = maskData.data;
+  const out = new Uint8ClampedArray(src.length);
+  const alpha = strength / 100;
+
+  for (let i = 0; i < src.length; i += 4) {
+    const skinWeight = mask[i] / 255; // skin mask stored in red channel
+    const w = alpha * skinWeight;
+
+    // Frequency separation: out = src + w * (blurLarge - blurSmall)
+    // Smooths low-freq (tone/color) while keeping high-freq (texture/pores)
+    out[i]     = clamp(src[i]     + w * (bl[i]     - bs[i]));
+    out[i + 1] = clamp(src[i + 1] + w * (bl[i + 1] - bs[i + 1]));
+    out[i + 2] = clamp(src[i + 2] + w * (bl[i + 2] - bs[i + 2]));
+    out[i + 3] = src[i + 3];
+  }
+
+  return new ImageData(out, imageData.width, imageData.height);
+}
+
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   const { type } = e.data;
 
@@ -182,6 +220,21 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
     const result = applySkinRetouch(
       e.data.imageData,
       e.data.blurData,
+      e.data.maskData,
+      e.data.strength
+    );
+    (self as unknown as Worker).postMessage(
+      { type: "RESULT", imageData: result },
+      [result.data.buffer]
+    );
+    return;
+  }
+
+  if (type === "FREQ_SEP") {
+    const result = applyFreqSep(
+      e.data.imageData,
+      e.data.blurSmall,
+      e.data.blurLarge,
       e.data.maskData,
       e.data.strength
     );

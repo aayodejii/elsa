@@ -15,6 +15,14 @@ type WorkerRequest =
       blurData: ImageData;
       maskData: ImageData;
       strength: number;
+    }
+  | {
+      type: "FREQ_SEP";
+      imageData: ImageData;
+      blurSmall: ImageData;
+      blurLarge: ImageData;
+      maskData: ImageData;
+      strength: number;
     };
 
 interface WorkerResponse {
@@ -62,6 +70,9 @@ export function useCanvasWorker() {
       const transferables: Transferable[] = [request.imageData.data.buffer];
       if (request.type === "SKIN_RETOUCH") {
         transferables.push(request.blurData.data.buffer, request.maskData.data.buffer);
+      }
+      if (request.type === "FREQ_SEP") {
+        transferables.push(request.blurSmall.data.buffer, request.blurLarge.data.buffer, request.maskData.data.buffer);
       }
 
       worker.postMessage(request, transferables);
