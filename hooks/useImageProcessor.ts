@@ -15,7 +15,12 @@ function isManualDefault(m: EditorSettings["manual"]) {
     m.contrast === 0 &&
     m.saturation === 0 &&
     m.sharpness === 0 &&
-    m.hue === 0
+    m.hue === 0 &&
+    m.temperature === 0 &&
+    m.tint === 0 &&
+    m.shadows === 0 &&
+    m.midtones === 0 &&
+    m.highlights === 0
   );
 }
 
