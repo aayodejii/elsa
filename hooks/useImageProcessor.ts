@@ -140,7 +140,45 @@ export function useImageProcessor() {
           setProcessingProgress(88);
         }
 
-        // Step 5: apply manual filters if any are non-default
+        // Step 5: frequency separation (skin-only, texture-preserving smoothing)
+        if (settings.freqSep.enabled && settings.freqSep.strength > 0) {
+          try {
+            const landmarks = await withTimeout(
+              detectFaceLandmarks(canvas, imageId), 30_000, "Face detection (freq sep)"
+            );
+            if (landmarks) {
+              const maskData = buildSkinMask(canvas.width, canvas.height, landmarks);
+              const s = settings.freqSep.strength;
+              const largeRadius = Math.round(2 + (s / 100) * 12);
+
+              const makeBlur = (radius: number) => {
+                const tmp = document.createElement("canvas");
+                tmp.width = canvas.width;
+                tmp.height = canvas.height;
+                const tCtx = tmp.getContext("2d")!;
+                tCtx.filter = `blur(${radius}px)`;
+                tCtx.drawImage(canvas, 0, 0);
+                return tCtx.getImageData(0, 0, canvas.width, canvas.height);
+              };
+
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const result = await runWorker({
+                type: "FREQ_SEP",
+                imageData,
+                blurSmall: makeBlur(2),
+                blurLarge: makeBlur(largeRadius),
+                maskData,
+                strength: s,
+              });
+              ctx.putImageData(result, 0, 0);
+            }
+          } catch (err) {
+            console.warn("Frequency separation failed, skipping:", err);
+          }
+          setProcessingProgress(92);
+        }
+
+        // Step 6: apply manual filters if any are non-default
         if (!isManualDefault(settings.manual)) {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
