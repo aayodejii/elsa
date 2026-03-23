@@ -84,6 +84,11 @@ export function computeAutoEnhanceSettings(imageId: string): Partial<EditorSetti
       saturation: avgSaturation < 0.2 ? 10 : 0,
       sharpness: 15,
       hue: 0,
+      temperature: 0,
+      tint: 0,
+      shadows: 0,
+      midtones: 0,
+      highlights: 0,
     },
   };
 }
