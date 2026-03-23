@@ -8,6 +8,7 @@ import SidebarPanel from "@/components/sidebar/SidebarPanel";
 import PresetPanel from "@/components/sidebar/PresetPanel";
 import ManualAdjustPanel from "@/components/sidebar/ManualAdjustPanel";
 import SkinRetouchPanel from "@/components/sidebar/SkinRetouchPanel";
+import FrequencySepPanel from "@/components/sidebar/FrequencySepPanel";
 import BackgroundPanel from "@/components/sidebar/BackgroundPanel";
 import FaceEnhancePanel from "@/components/sidebar/FaceEnhancePanel";
 import BatchPanel from "@/components/batch/BatchPanel";
@@ -73,6 +74,7 @@ export default function EditorShell() {
           <SidebarPanel
             presetPanel={<PresetPanel />}
             skinRetouchPanel={<SkinRetouchPanel />}
+            freqSepPanel={<FrequencySepPanel />}
             backgroundPanel={<BackgroundPanel />}
             faceEnhancePanel={<FaceEnhancePanel />}
             manualAdjustPanel={<ManualAdjustPanel />}

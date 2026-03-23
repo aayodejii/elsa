@@ -59,6 +59,7 @@ function AccordionSection({ title, icon, children, defaultOpen = false, badge }:
 interface SidebarPanelProps {
   presetPanel: ReactNode;
   skinRetouchPanel: ReactNode;
+  freqSepPanel: ReactNode;
   backgroundPanel: ReactNode;
   faceEnhancePanel: ReactNode;
   manualAdjustPanel: ReactNode;
@@ -67,6 +68,7 @@ interface SidebarPanelProps {
 export default function SidebarPanel({
   presetPanel,
   skinRetouchPanel,
+  freqSepPanel,
   backgroundPanel,
   faceEnhancePanel,
   manualAdjustPanel,
@@ -123,6 +125,18 @@ export default function SidebarPanel({
         badge="ai"
       >
         <ErrorBoundary label="skin">{skinRetouchPanel}</ErrorBoundary>
+      </AccordionSection>
+
+      <AccordionSection
+        title="Freq. Separation"
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 12h20M2 6c4 0 4 6 8 6s4-6 8-6M2 18c4 0 4-6 8-6s4 6 8 6" />
+          </svg>
+        }
+        badge="ai"
+      >
+        <ErrorBoundary label="freq-sep">{freqSepPanel}</ErrorBoundary>
       </AccordionSection>
 
       <AccordionSection
