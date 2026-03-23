@@ -60,20 +60,22 @@ function applyManualFilter(
   imageData: ImageData,
   settings: EditorSettings["manual"]
 ): ImageData {
-  const { brightness, contrast, saturation, hue } = settings;
+  const { brightness, contrast, saturation, hue, temperature, tint, shadows, midtones, highlights } = settings;
   const src = imageData.data;
   const out = new Uint8ClampedArray(src.length);
 
   const brightDelta = brightness * 2.55;
-  const contrastFactor =
-    contrast !== 0
-      ? (259 * (contrast + 255)) / (255 * (259 - contrast))
-      : 1;
+  const contrastFactor = contrast !== 0 ? (259 * (contrast + 255)) / (255 * (259 - contrast)) : 1;
   const satFactor = 1 + saturation / 100;
   const hueShift = hue / 360;
+  const tempDelta = temperature * 0.5;
+  const tintDelta = tint * 0.5;
 
   const doContrast = contrast !== 0;
   const doColor = saturation !== 0 || hue !== 0;
+  const doTemp = temperature !== 0;
+  const doTint = tint !== 0;
+  const doTone = shadows !== 0 || midtones !== 0 || highlights !== 0;
 
   for (let i = 0; i < src.length; i += 4) {
     let r = src[i], g = src[i + 1], b = src[i + 2];
@@ -90,11 +92,31 @@ function applyManualFilter(
       b = clamp(contrastFactor * (b - 128) + 128);
     }
 
+    if (doTemp) {
+      r = clamp(r + tempDelta);
+      b = clamp(b - tempDelta);
+    }
+
+    if (doTint) {
+      g = clamp(g - tintDelta);
+    }
+
     if (doColor) {
       let [h_, s_, l_] = rgbToHsl(r, g, b);
       if (hue !== 0) h_ = (h_ + hueShift + 1) % 1;
       if (saturation !== 0) s_ = Math.max(0, Math.min(1, s_ * satFactor));
       [r, g, b] = hslToRgb(h_, s_, l_);
+    }
+
+    if (doTone) {
+      const lum = (r + g + b) / 3 / 255;
+      const ws = (1 - lum) * (1 - lum);
+      const wm = 4 * lum * (1 - lum);
+      const wh = lum * lum;
+      const delta = (shadows * ws + midtones * wm + highlights * wh) * 1.5;
+      r = clamp(r + delta);
+      g = clamp(g + delta);
+      b = clamp(b + delta);
     }
 
     out[i] = r;
