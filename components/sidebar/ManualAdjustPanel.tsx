@@ -72,13 +72,29 @@ export default function ManualAdjustPanel() {
       <SliderRow label="Sharpness" value={manual!.sharpness} min={0} max={100} onChange={(v) => update("sharpness", v)} />
       <SliderRow label="Hue" value={manual!.hue} min={-180} max={180} onChange={(v) => update("hue", v)} showSign />
 
-      {/* Reset manual */}
+      <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
+        <p className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-3">color grading</p>
+        <div className="flex flex-col gap-4">
+          <SliderRow label="Temperature" value={manual!.temperature} min={-100} max={100} onChange={(v) => update("temperature", v)} showSign />
+          <SliderRow label="Tint" value={manual!.tint} min={-100} max={100} onChange={(v) => update("tint", v)} showSign />
+        </div>
+      </div>
+
+      <div className="border-t pt-3" style={{ borderColor: "var(--border)" }}>
+        <p className="text-[9px] font-mono uppercase tracking-widest text-[var(--text-muted)] mb-3">tone</p>
+        <div className="flex flex-col gap-4">
+          <SliderRow label="Shadows" value={manual!.shadows} min={-100} max={100} onChange={(v) => update("shadows", v)} showSign />
+          <SliderRow label="Midtones" value={manual!.midtones} min={-100} max={100} onChange={(v) => update("midtones", v)} showSign />
+          <SliderRow label="Highlights" value={manual!.highlights} min={-100} max={100} onChange={(v) => update("highlights", v)} showSign />
+        </div>
+      </div>
+
       <button
         className="mt-1 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--text-secondary)] text-left transition-colors"
         onClick={() => {
           if (!activeImageId) return;
           updateSettings(activeImageId, {
-            manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0 },
+            manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0, temperature: 0, tint: 0, shadows: 0, midtones: 0, highlights: 0 },
           });
         }}
       >

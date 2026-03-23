@@ -48,7 +48,7 @@ function AccordionSection({ title, icon, children, defaultOpen = false, badge }:
 
       <div
         className="overflow-hidden transition-all duration-200 ease-in-out"
-        style={{ maxHeight: open ? "600px" : "0px" }}
+        style={{ maxHeight: open ? "1200px" : "0px" }}
       >
         <div className="px-4 pb-4 pt-1">{children}</div>
       </div>
