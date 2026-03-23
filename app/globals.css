@@ -53,6 +53,11 @@ body {
   overflow: hidden;
 }
 
+
+button{
+  cursor: pointer;
+}
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }

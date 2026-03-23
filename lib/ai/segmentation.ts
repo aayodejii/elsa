@@ -1,32 +1,27 @@
+import { ImageSegmenter, FilesetResolver } from "@mediapipe/tasks-vision";
 import { SegmentationMask } from "@/types/ai";
-import { ensureTfReady } from "./tfBackend";
 
-type Segmenter = Awaited<ReturnType<typeof import("@tensorflow-models/body-segmentation").createSegmenter>>;
+const WASM_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.33/wasm";
+// Served from public/models/ after running: node scripts/downloadModels.js
+const MODEL_URL = "/models/selfie_multiclass_256x256.tflite";
 
-let segmenter: Segmenter | null = null;
-let loadPromise: Promise<Segmenter> | null = null;
+let segmenter: ImageSegmenter | null = null;
+let loadPromise: Promise<ImageSegmenter> | null = null;
 
-async function getSegmenter(): Promise<Segmenter> {
+async function getSegmenter(): Promise<ImageSegmenter> {
   if (segmenter) return segmenter;
   if (loadPromise) return loadPromise;
 
   loadPromise = (async () => {
-    // Use the shared TF.js backend initialization (no double-init)
-    await ensureTfReady();
-
-    const bodySegmentation = await import("@tensorflow-models/body-segmentation");
-
-    const model = await bodySegmentation.createSegmenter(
-      bodySegmentation.SupportedModels.MediaPipeSelfieSegmentation,
-      {
-        runtime: "mediapipe" as const,
-        solutionPath:
-          "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation",
-        modelType: "general",
-      }
-    );
-    segmenter = model;
-    return model;
+    const vision = await FilesetResolver.forVisionTasks(WASM_PATH);
+    const instance = await ImageSegmenter.createFromOptions(vision, {
+      baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
+      runningMode: "IMAGE",
+      outputConfidenceMasks: true,
+      outputCategoryMask: false,
+    });
+    segmenter = instance;
+    return instance;
   })();
 
   return loadPromise;
@@ -45,29 +40,28 @@ export async function getSegmentationMask(
   if (maskCache.has(imageId)) return maskCache.get(imageId)!;
 
   const model = await getSegmenter();
-  const segmentations = await model.segmentPeople(canvas);
+  const w = canvas.width;
+  const h = canvas.height;
 
-  if (!segmentations.length) {
-    const fallback: SegmentationMask = {
-      imageData: new ImageData(canvas.width, canvas.height),
-      width: canvas.width,
-      height: canvas.height,
-    };
-    // fill all white (keep everything)
-    const d = fallback.imageData.data;
-    for (let i = 3; i < d.length; i += 4) d[i] = 255;
-    maskCache.set(imageId, fallback);
-    return fallback;
+  // segment() is synchronous in IMAGE mode and returns a copy
+  const result = model.segment(canvas);
+  const out = new ImageData(w, h);
+
+  if (result.confidenceMasks && result.confidenceMasks.length > 0) {
+    // Index 0 = background; foreground = 1 - background confidence
+    const bg = result.confidenceMasks[0].getAsFloat32Array();
+    const n = w * h;
+    for (let i = 0; i < n; i++) {
+      out.data[i * 4 + 3] = Math.round(Math.max(0, 1 - bg[i]) * 255);
+    }
+    result.close();
+  } else {
+    for (let i = 3; i < out.data.length; i += 4) out.data[i] = 255;
   }
 
-  const maskImageData = await segmentations[0].mask.toImageData();
-  const result: SegmentationMask = {
-    imageData: maskImageData,
-    width: canvas.width,
-    height: canvas.height,
-  };
-  maskCache.set(imageId, result);
-  return result;
+  const mask: SegmentationMask = { imageData: out, width: w, height: h };
+  maskCache.set(imageId, mask);
+  return mask;
 }
 
 export function applyBackgroundRemove(
@@ -80,7 +74,7 @@ export function applyBackgroundRemove(
   const maskPx = mask.imageData.data;
 
   for (let i = 0; i < px.length; i += 4) {
-    px[i + 3] = maskPx[i + 3]; // use mask alpha as output alpha
+    px[i + 3] = maskPx[i + 3];
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -94,7 +88,6 @@ export function applyBackgroundBlur(
   const w = canvas.width, h = canvas.height;
   const ctx = canvas.getContext("2d")!;
 
-  // Blurred version of the original
   const bgCanvas = document.createElement("canvas");
   bgCanvas.width = w;
   bgCanvas.height = h;
@@ -108,7 +101,7 @@ export function applyBackgroundBlur(
   const out = orig.data;
 
   for (let i = 0; i < out.length; i += 4) {
-    const fg = maskPx[i + 3] / 255; // 1 = subject, 0 = background
+    const fg = maskPx[i + 3] / 255;
     out[i]     = blurred.data[i]     + (orig.data[i]     - blurred.data[i])     * fg;
     out[i + 1] = blurred.data[i + 1] + (orig.data[i + 1] - blurred.data[i + 1]) * fg;
     out[i + 2] = blurred.data[i + 2] + (orig.data[i + 2] - blurred.data[i + 2]) * fg;
