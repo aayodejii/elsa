@@ -14,11 +14,16 @@ export interface EditorSettings {
     teethWhiten: number; // 0–100
   };
   manual: {
-    brightness: number; // -100 to 100
-    contrast: number; // -100 to 100
-    saturation: number; // -100 to 100
-    sharpness: number; // 0–100
-    hue: number; // -180 to 180
+    brightness: number;   // -100 to 100
+    contrast: number;     // -100 to 100
+    saturation: number;   // -100 to 100
+    sharpness: number;    // 0–100
+    hue: number;          // -180 to 180
+    temperature: number;  // -100 to 100 (cool → warm)
+    tint: number;         // -100 to 100 (green → magenta)
+    shadows: number;      // -100 to 100
+    midtones: number;     // -100 to 100
+    highlights: number;   // -100 to 100
   };
 }
 
@@ -40,5 +45,5 @@ export const DEFAULT_SETTINGS: EditorSettings = {
   skinRetouch: { enabled: false, strength: 50 },
   background: { mode: "none", blurRadius: 8 },
   faceEnhance: { enabled: false, brightness: 30, eyeEnhance: 30, teethWhiten: 30 },
-  manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0 },
+  manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0, temperature: 0, tint: 0, shadows: 0, midtones: 0, highlights: 0 },
 };
