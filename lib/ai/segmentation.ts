@@ -80,6 +80,68 @@ export function applyBackgroundRemove(
   ctx.putImageData(imageData, 0, 0);
 }
 
+function hexToRgb(hex: string): [number, number, number] {
+  return [
+    parseInt(hex.slice(1, 3), 16),
+    parseInt(hex.slice(3, 5), 16),
+    parseInt(hex.slice(5, 7), 16),
+  ];
+}
+
+export function applyBackgroundFill(
+  canvas: HTMLCanvasElement,
+  mask: SegmentationMask,
+  mode: "color" | "gradient",
+  fillColor: string,
+  gradientStart: string,
+  gradientEnd: string,
+  gradientAngle: number
+): void {
+  const w = canvas.width, h = canvas.height;
+  const ctx = canvas.getContext("2d")!;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const px = imageData.data;
+  const maskPx = mask.imageData.data;
+
+  const [fR, fG, fB] = hexToRgb(fillColor);
+  const [sR, sG, sB] = hexToRgb(gradientStart);
+  const [eR, eG, eB] = hexToRgb(gradientEnd);
+  const angleRad = (gradientAngle * Math.PI) / 180;
+  const cosA = Math.cos(angleRad);
+  const sinA = Math.sin(angleRad);
+  const cx = w / 2, cy = h / 2;
+  const len = Math.hypot(w, h) / 2;
+
+  for (let i = 0; i < px.length; i += 4) {
+    // Sharpen the soft mask so edge pixels snap toward fill rather than
+    // blending the original background color in (which causes fringing).
+    const raw = maskPx[i + 3] / 255;
+    const x = Math.max(0, Math.min(1, (raw - 0.2) / 0.6));
+    const fg = x * x * (3 - 2 * x); // smoothstep(0.2, 0.8, raw)
+
+    let bgR: number, bgG: number, bgB: number;
+    if (mode === "gradient") {
+      const pixIdx = i >>> 2;
+      const dx = (pixIdx % w) - cx;
+      const dy = ((pixIdx / w) | 0) - cy;
+      const t = Math.max(0, Math.min(1, (dx * cosA + dy * sinA) / len * 0.5 + 0.5));
+      bgR = sR + (eR - sR) * t;
+      bgG = sG + (eG - sG) * t;
+      bgB = sB + (eB - sB) * t;
+    } else {
+      bgR = fR; bgG = fG; bgB = fB;
+    }
+
+    // lerp: background in bg areas, original in fg areas — same pattern as applyBackgroundBlur
+    px[i]     = Math.round(bgR + (px[i]     - bgR) * fg);
+    px[i + 1] = Math.round(bgG + (px[i + 1] - bgG) * fg);
+    px[i + 2] = Math.round(bgB + (px[i + 2] - bgB) * fg);
+    px[i + 3] = 255;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
 export function applyBackgroundBlur(
   canvas: HTMLCanvasElement,
   mask: SegmentationMask,
