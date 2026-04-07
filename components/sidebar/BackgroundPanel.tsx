@@ -6,6 +6,8 @@ const MODES = [
   { value: "none", label: "Original" },
   { value: "remove", label: "Remove" },
   { value: "blur", label: "Blur" },
+  { value: "color", label: "Color" },
+  { value: "gradient", label: "Gradient" },
 ] as const;
 
 export default function BackgroundPanel() {
@@ -44,7 +46,7 @@ export default function BackgroundPanel() {
         ))}
       </div>
 
-      {/* Blur radius — only shown in blur mode */}
+      {/* Blur radius */}
       {bg!.mode === "blur" && (
         <div className="flex flex-col gap-1.5 animate-fade-in">
           <div className="flex items-center justify-between">
@@ -62,6 +64,77 @@ export default function BackgroundPanel() {
               })
             }
           />
+        </div>
+      )}
+
+      {/* Solid color fill */}
+      {bg!.mode === "color" && (
+        <div className="flex flex-col gap-2 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-[var(--text-secondary)]">Fill color</label>
+            <span className="font-mono text-xs text-accent tabular-nums">{bg!.fillColor}</span>
+          </div>
+          <input
+            type="color"
+            value={bg!.fillColor}
+            onChange={(e) =>
+              updateSettings(activeImageId!, {
+                background: { ...bg!, fillColor: e.target.value },
+              })
+            }
+            className="w-full h-8 rounded cursor-pointer border-0 bg-transparent"
+          />
+        </div>
+      )}
+
+      {/* Gradient fill */}
+      {bg!.mode === "gradient" && (
+        <div className="flex flex-col gap-3 animate-fade-in">
+          <div className="flex gap-2">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Start</label>
+              <input
+                type="color"
+                value={bg!.gradientStart}
+                onChange={(e) =>
+                  updateSettings(activeImageId!, {
+                    background: { ...bg!, gradientStart: e.target.value },
+                  })
+                }
+                className="w-full h-8 rounded cursor-pointer border-0 bg-transparent"
+              />
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">End</label>
+              <input
+                type="color"
+                value={bg!.gradientEnd}
+                onChange={(e) =>
+                  updateSettings(activeImageId!, {
+                    background: { ...bg!, gradientEnd: e.target.value },
+                  })
+                }
+                className="w-full h-8 rounded cursor-pointer border-0 bg-transparent"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-[var(--text-secondary)]">Angle</label>
+              <span className="font-mono text-xs text-accent tabular-nums">{bg!.gradientAngle}°</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={360}
+              value={bg!.gradientAngle}
+              onChange={(e) =>
+                updateSettings(activeImageId!, {
+                  background: { ...bg!, gradientAngle: Number(e.target.value) },
+                })
+              }
+            />
+          </div>
         </div>
       )}
 
