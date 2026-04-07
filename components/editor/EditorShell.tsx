@@ -11,6 +11,8 @@ import SkinRetouchPanel from "@/components/sidebar/SkinRetouchPanel";
 import FrequencySepPanel from "@/components/sidebar/FrequencySepPanel";
 import BackgroundPanel from "@/components/sidebar/BackgroundPanel";
 import FaceEnhancePanel from "@/components/sidebar/FaceEnhancePanel";
+import EffectsPanel from "@/components/sidebar/EffectsPanel";
+import DenoiserPanel from "@/components/sidebar/DenoiserPanel";
 import BatchPanel from "@/components/batch/BatchPanel";
 import DropZone from "@/components/upload/DropZone";
 import { useEditorStore } from "@/store/editorStore";
@@ -78,6 +80,8 @@ export default function EditorShell() {
             backgroundPanel={<BackgroundPanel />}
             faceEnhancePanel={<FaceEnhancePanel />}
             manualAdjustPanel={<ManualAdjustPanel />}
+            effectsPanel={<EffectsPanel />}
+            denoiserPanel={<DenoiserPanel />}
           />
         </div>
 
