@@ -23,7 +23,20 @@ interface FreqSepMessage {
   strength: number;
 }
 
-type WorkerMessage = ManualFilterMessage | SkinRetouchMessage | FreqSepMessage;
+interface GrainMessage {
+  type: "GRAIN";
+  imageData: ImageData;
+  strength: number;
+  size: number;
+}
+
+interface DenoiseMessage {
+  type: "DENOISE";
+  imageData: ImageData;
+  strength: number;
+}
+
+type WorkerMessage = ManualFilterMessage | SkinRetouchMessage | FreqSepMessage | GrainMessage | DenoiseMessage;
 
 function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
   const rn = r / 255, gn = g / 255, bn = b / 255;
@@ -204,6 +217,76 @@ function applyFreqSep(
   return new ImageData(out, imageData.width, imageData.height);
 }
 
+function applyGrain(imageData: ImageData, strength: number, size: number): ImageData {
+  const w = imageData.width;
+  const src = imageData.data;
+  const out = new Uint8ClampedArray(src.length);
+  const maxDelta = (strength / 100) * 80;
+
+  for (let i = 0; i < src.length; i += 4) {
+    const pixIdx = i >>> 2;
+    const x = pixIdx % w;
+    const y = (pixIdx / w) | 0;
+    const gx = size > 1 ? (x / size) | 0 : x;
+    const gy = size > 1 ? (y / size) | 0 : y;
+    // Park-Miller LCG for deterministic per-grain noise
+    const seed = ((Math.imul(gx, 1664525) + Math.imul(gy, 1013904223)) & 0x7fffffff) >>> 0;
+    const noise = ((seed >>> 16) & 0xff) / 255;
+    const delta = (noise - 0.5) * 2 * maxDelta;
+    out[i]     = clamp(src[i]     + delta);
+    out[i + 1] = clamp(src[i + 1] + delta);
+    out[i + 2] = clamp(src[i + 2] + delta);
+    out[i + 3] = src[i + 3];
+  }
+  return new ImageData(out, imageData.width, imageData.height);
+}
+
+function applyDenoise(imageData: ImageData, strength: number): ImageData {
+  const w = imageData.width;
+  const h = imageData.height;
+  const src = imageData.data;
+  const out = new Uint8ClampedArray(src.length);
+
+  // Variance-based adaptive smoother: only smooths flat/noisy areas, preserves edges.
+  // High local variance = edge/detail → keep original.
+  // Low local variance = flat area/noise → blend toward neighborhood average.
+  // threshold maps strength 0-100 → variance threshold 80-800
+  const threshold = 80 + (strength / 100) * 720;
+  const blendScale = strength / 100;
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const ci = (y * w + x) * 4;
+      let sumLum = 0, sumLumSq = 0, sumR = 0, sumG = 0, sumB = 0;
+
+      for (let dy = -1; dy <= 1; dy++) {
+        const ny = Math.max(0, Math.min(h - 1, y + dy));
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = Math.max(0, Math.min(w - 1, x + dx));
+          const ni = (ny * w + nx) * 4;
+          const r = src[ni], g = src[ni + 1], b = src[ni + 2];
+          const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+          sumLum += lum;
+          sumLumSq += lum * lum;
+          sumR += r; sumG += g; sumB += b;
+        }
+      }
+
+      const avgLum = sumLum / 9;
+      const variance = sumLumSq / 9 - avgLum * avgLum;
+      // blend = 1 in flat areas (variance=0), 0 at edges (variance >= threshold)
+      const blend = Math.max(0, 1 - variance / threshold) * blendScale;
+
+      out[ci]     = Math.round(src[ci]     * (1 - blend) + (sumR / 9) * blend);
+      out[ci + 1] = Math.round(src[ci + 1] * (1 - blend) + (sumG / 9) * blend);
+      out[ci + 2] = Math.round(src[ci + 2] * (1 - blend) + (sumB / 9) * blend);
+      out[ci + 3] = src[ci + 3];
+    }
+  }
+
+  return new ImageData(out, w, h);
+}
+
 self.onmessage = (e: MessageEvent<WorkerMessage>) => {
   const { type } = e.data;
 
@@ -238,6 +321,24 @@ self.onmessage = (e: MessageEvent<WorkerMessage>) => {
       e.data.maskData,
       e.data.strength
     );
+    (self as unknown as Worker).postMessage(
+      { type: "RESULT", imageData: result },
+      [result.data.buffer]
+    );
+    return;
+  }
+
+  if (type === "GRAIN") {
+    const result = applyGrain(e.data.imageData, e.data.strength, e.data.size);
+    (self as unknown as Worker).postMessage(
+      { type: "RESULT", imageData: result },
+      [result.data.buffer]
+    );
+    return;
+  }
+
+  if (type === "DENOISE") {
+    const result = applyDenoise(e.data.imageData, e.data.strength);
     (self as unknown as Worker).postMessage(
       { type: "RESULT", imageData: result },
       [result.data.buffer]

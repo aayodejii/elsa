@@ -23,6 +23,17 @@ type WorkerRequest =
       blurLarge: ImageData;
       maskData: ImageData;
       strength: number;
+    }
+  | {
+      type: "GRAIN";
+      imageData: ImageData;
+      strength: number;
+      size: number;
+    }
+  | {
+      type: "DENOISE";
+      imageData: ImageData;
+      strength: number;
     };
 
 interface WorkerResponse {
