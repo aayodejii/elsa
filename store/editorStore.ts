@@ -113,14 +113,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set((state) => ({
       images: state.images.map((img) => {
         if (img.id !== id) return img;
-        const merged = {
-          ...img.settings,
-          ...patch,
-          skinRetouch: { ...img.settings.skinRetouch, ...(patch.skinRetouch ?? {}) },
-          background: { ...img.settings.background, ...(patch.background ?? {}) },
-          faceEnhance: { ...img.settings.faceEnhance, ...(patch.faceEnhance ?? {}) },
-          manual: { ...img.settings.manual, ...(patch.manual ?? {}) },
-        };
+        const merged = { ...img.settings } as EditorSettings;
+        for (const k of Object.keys(patch) as Array<keyof EditorSettings>) {
+          const v = patch[k];
+          if (v !== undefined && typeof v === "object" && !Array.isArray(v)) {
+            (merged as Record<string, unknown>)[k] = {
+              ...(img.settings[k] as object),
+              ...(v as object),
+            };
+          } else if (v !== undefined) {
+            (merged as Record<string, unknown>)[k] = v;
+          }
+        }
         const trimmed = img.settingsHistory.slice(0, img.historyIndex + 1);
         return {
           ...img,

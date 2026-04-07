@@ -221,7 +221,45 @@ export function useImageProcessor() {
           setProcessingProgress(95);
         }
 
-        // Step 6: export preview
+        // Step 7: denoiser
+        if (settings.denoiser.enabled && settings.denoiser.strength > 0) {
+          try {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const result = await runWorker({ type: "DENOISE", imageData, strength: settings.denoiser.strength });
+            ctx.putImageData(result, 0, 0);
+          } catch (err) {
+            console.warn("Denoiser failed, skipping:", err);
+          }
+        }
+
+        // Step 8: vignette (main thread — radial gradient composite)
+        if (settings.vignette.enabled && settings.vignette.strength > 0) {
+          const cx = canvas.width / 2;
+          const cy = canvas.height / 2;
+          const radius = Math.hypot(cx, cy);
+          const grad = ctx.createRadialGradient(cx, cy, radius * 0.4, cx, cy, radius);
+          grad.addColorStop(0, "rgba(0,0,0,0)");
+          grad.addColorStop(1, `rgba(0,0,0,${((settings.vignette.strength / 100) * 0.75).toFixed(3)})`);
+          ctx.save();
+          ctx.globalCompositeOperation = "multiply";
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        }
+
+        // Step 9: grain (last — applied on top of everything)
+        if (settings.grain.enabled && settings.grain.strength > 0) {
+          try {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const result = await runWorker({ type: "GRAIN", imageData, strength: settings.grain.strength, size: settings.grain.size });
+            ctx.putImageData(result, 0, 0);
+          } catch (err) {
+            console.warn("Grain failed, skipping:", err);
+          }
+          setProcessingProgress(98);
+        }
+
+        // Export preview
         const format =
           settings.background.mode === "remove" ? "image/png" : "image/jpeg";
         const quality = format === "image/jpeg" ? 0.88 : undefined;
