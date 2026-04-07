@@ -29,6 +29,19 @@ export interface EditorSettings {
     midtones: number;     // -100 to 100
     highlights: number;   // -100 to 100
   };
+  vignette: {
+    enabled: boolean;
+    strength: number; // 0–100
+  };
+  grain: {
+    enabled: boolean;
+    strength: number; // 0–100
+    size: number;     // 1–5
+  };
+  denoiser: {
+    enabled: boolean;
+    strength: number; // 0–100
+  };
 }
 
 export interface ImageItem {
@@ -51,4 +64,7 @@ export const DEFAULT_SETTINGS: EditorSettings = {
   background: { mode: "none", blurRadius: 8 },
   faceEnhance: { enabled: false, brightness: 30, eyeEnhance: 30, teethWhiten: 30 },
   manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0, temperature: 0, tint: 0, shadows: 0, midtones: 0, highlights: 0 },
+  vignette: { enabled: false, strength: 50 },
+  grain: { enabled: false, strength: 30, size: 1 },
+  denoiser: { enabled: false, strength: 50 },
 };
