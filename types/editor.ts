@@ -8,8 +8,12 @@ export interface EditorSettings {
     strength: number; // 0–100
   };
   background: {
-    mode: "none" | "remove" | "blur";
+    mode: "none" | "remove" | "blur" | "color" | "gradient";
     blurRadius: number; // 0–20
+    fillColor: string;     // hex, used when mode = "color"
+    gradientStart: string; // hex, used when mode = "gradient"
+    gradientEnd: string;   // hex, used when mode = "gradient"
+    gradientAngle: number; // 0–360 degrees
   };
   faceEnhance: {
     enabled: boolean;
@@ -61,7 +65,7 @@ export type ProcessingStatus = "idle" | "processing" | "done" | "error";
 export const DEFAULT_SETTINGS: EditorSettings = {
   skinRetouch: { enabled: false, strength: 50 },
   freqSep: { enabled: false, strength: 50 },
-  background: { mode: "none", blurRadius: 8 },
+  background: { mode: "none", blurRadius: 8, fillColor: "#1a1a2e", gradientStart: "#1a1a2e", gradientEnd: "#16213e", gradientAngle: 135 },
   faceEnhance: { enabled: false, brightness: 30, eyeEnhance: 30, teethWhiten: 30 },
   manual: { brightness: 0, contrast: 0, saturation: 0, sharpness: 0, hue: 0, temperature: 0, tint: 0, shadows: 0, midtones: 0, highlights: 0 },
   vignette: { enabled: false, strength: 50 },
