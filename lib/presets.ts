@@ -23,6 +23,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: false, strength: 50 },
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
   {
@@ -39,6 +40,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: true, strength: 40 },
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
   {
@@ -55,6 +57,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: true, strength: 55 },
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
   {
@@ -71,6 +74,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: false, strength: 50 },
       grain: { enabled: true, strength: 20, size: 1 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
   {
@@ -87,6 +91,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: true, strength: 45 },
       grain: { enabled: true, strength: 25, size: 2 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
   {
@@ -103,6 +108,7 @@ export const PRESETS: Preset[] = [
       vignette: { enabled: false, strength: 50 },
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
+      exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
     },
   },
 ];
