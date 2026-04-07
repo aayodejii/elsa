@@ -73,6 +73,9 @@ export function computeAutoEnhanceSettings(imageId: string): Partial<EditorSetti
   return {
     skinRetouch: { enabled: hasSkin, strength: hasSkin ? skinStrength : 50 },
     freqSep: { enabled: false, strength: 50 },
+    vignette: { enabled: false, strength: 50 },
+    grain: { enabled: false, strength: 30, size: 1 },
+    denoiser: { enabled: false, strength: 50 },
     faceEnhance: {
       enabled: hasSkin,
       brightness: hasSkin ? 25 : 0,
