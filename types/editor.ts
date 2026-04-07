@@ -46,6 +46,11 @@ export interface EditorSettings {
     enabled: boolean;
     strength: number; // 0–100
   };
+  exportSettings: {
+    jpegQuality: number;       // 0–100
+    outputWidth: number | null;
+    outputHeight: number | null;
+  };
 }
 
 export interface ImageItem {
@@ -71,4 +76,5 @@ export const DEFAULT_SETTINGS: EditorSettings = {
   vignette: { enabled: false, strength: 50 },
   grain: { enabled: false, strength: 30, size: 1 },
   denoiser: { enabled: false, strength: 50 },
+  exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
 };
