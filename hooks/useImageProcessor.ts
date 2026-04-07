@@ -6,7 +6,7 @@ import { useCanvasWorker } from "./useCanvasWorker";
 import { EditorSettings } from "@/types/editor";
 import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
 import { buildSkinMask, buildBlurredCopy } from "@/lib/ai/skinRetouch";
-import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur } from "@/lib/ai/segmentation";
+import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur, applyBackgroundFill } from "@/lib/ai/segmentation";
 import { applyFaceBrightening, applyEyeEnhancement, applyTeethWhitening } from "@/lib/ai/faceEnhance";
 
 function isManualDefault(m: EditorSettings["manual"]) {
@@ -83,6 +83,15 @@ export function useImageProcessor() {
             setProcessingProgress(40);
             if (settings.background.mode === "remove") {
               applyBackgroundRemove(canvas, mask);
+            } else if (settings.background.mode === "color" || settings.background.mode === "gradient") {
+              applyBackgroundFill(
+                canvas, mask,
+                settings.background.mode,
+                settings.background.fillColor,
+                settings.background.gradientStart,
+                settings.background.gradientEnd,
+                settings.background.gradientAngle
+              );
             } else {
               applyBackgroundBlur(canvas, mask, settings.background.blurRadius);
             }
