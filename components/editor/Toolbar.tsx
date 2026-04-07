@@ -1,9 +1,9 @@
 "use client";
 
 import { useEditorStore } from "@/store/editorStore";
-import { downloadSingle } from "@/lib/zip/batchExport";
 import { computeAutoEnhanceSettings } from "@/lib/ai/autoEnhance";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import ExportDialog from "./ExportDialog";
 
 interface ToolbarProps {
   onZoomIn: () => void;
@@ -32,10 +32,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
     ? activeImage.historyIndex < activeImage.settingsHistory.length - 1
     : false;
 
-  const handleDownload = useCallback(() => {
-    if (!activeImage) return;
-    downloadSingle(activeImage);
-  }, [activeImage]);
+  const [showExport, setShowExport] = useState(false);
 
   const handleAutoEnhance = useCallback(() => {
     if (!activeImageId) return;
@@ -47,6 +44,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
     "w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface)] transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed";
 
   return (
+    <>
     <header
       className="flex items-center h-11 px-4 border-b shrink-0"
       style={{ borderColor: "var(--border)", background: "var(--bg-panel)" }}
@@ -176,7 +174,7 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
 
       {/* Download */}
       <button
-        onClick={handleDownload}
+        onClick={() => setShowExport(true)}
         disabled={!activeImageId}
         className={`
           flex items-center gap-2 h-7 px-3 rounded-lg text-xs font-semibold
@@ -192,5 +190,10 @@ export default function Toolbar({ onZoomIn, onZoomOut, onZoomFit, showSidebar, o
         export
       </button>
     </header>
+
+    {showExport && activeImage && (
+      <ExportDialog image={activeImage} onClose={() => setShowExport(false)} />
+    )}
+    </>
   );
 }
