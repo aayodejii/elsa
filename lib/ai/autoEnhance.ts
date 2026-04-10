@@ -76,6 +76,8 @@ export function computeAutoEnhanceSettings(imageId: string): Partial<EditorSetti
     vignette: { enabled: false, strength: 50 },
     grain: { enabled: false, strength: 30, size: 1 },
     denoiser: { enabled: false, strength: 50 },
+    darkCircles: { enabled: false, strength: 50 },
+    wrinkleSmooth: { enabled: false, strength: 50 },
     faceEnhance: {
       enabled: hasSkin,
       brightness: hasSkin ? 25 : 0,

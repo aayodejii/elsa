@@ -24,6 +24,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
   {
@@ -41,6 +43,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
   {
@@ -58,6 +62,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
   {
@@ -75,6 +81,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: true, strength: 20, size: 1 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
   {
@@ -92,6 +100,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: true, strength: 25, size: 2 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
   {
@@ -109,6 +119,8 @@ export const PRESETS: Preset[] = [
       grain: { enabled: false, strength: 30, size: 1 },
       denoiser: { enabled: false, strength: 50 },
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+      darkCircles: { enabled: false, strength: 50 },
+      wrinkleSmooth: { enabled: false, strength: 50 },
     },
   },
 ];
