@@ -1,5 +1,62 @@
 import { FaceLandmarkResult } from "@/types/ai";
 
+export function applyDarkCircleRemoval(
+  canvas: HTMLCanvasElement,
+  landmarks: FaceLandmarkResult,
+  strength: number
+): void {
+  const ctx = canvas.getContext("2d")!;
+  const w = canvas.width, h = canvas.height;
+  const imageData = ctx.getImageData(0, 0, w, h);
+  const px = imageData.data;
+
+  for (const eye of [landmarks.leftEye, landmarks.rightEye]) {
+    const xs = eye.map((p) => p.x);
+    const ys = eye.map((p) => p.y);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const eyeW = maxX - minX;
+    const eyeH = maxY - minY;
+
+    // Under-eye ellipse: centered below the eye, wider than tall
+    const cx = (minX + maxX) / 2;
+    const cy = maxY + eyeH * 0.5;
+    const rx = eyeW * 0.62;
+    const ry = eyeH * 1.1;
+
+    const x0 = Math.max(0, Math.floor(cx - rx - 2));
+    const x1 = Math.min(w - 1, Math.ceil(cx + rx + 2));
+    const y0 = Math.max(0, Math.floor(cy - ry - 2));
+    const y1 = Math.min(h - 1, Math.ceil(cy + ry + 2));
+
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        const dx = (x - cx) / rx;
+        const dy = (y - cy) / ry;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d >= 1) continue;
+
+        // Smooth falloff: strongest at center, zero at edge
+        const t = (1 - d) * (strength / 100);
+        const i = (y * w + x) * 4;
+        const r = px[i], g = px[i + 1], b = px[i + 2];
+
+        // Brighten
+        const delta = t * 22;
+        // Desaturate toward luminance
+        const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        const desat = t * 0.35;
+
+        px[i]     = Math.min(255, Math.round(r + (lum - r) * desat + delta));
+        px[i + 1] = Math.min(255, Math.round(g + (lum - g) * desat + delta));
+        px[i + 2] = Math.min(255, Math.round(b + (lum - b) * desat + delta));
+      }
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
 function buildPolygonPath(
   ctx: CanvasRenderingContext2D,
   points: Array<{ x: number; y: number }>
