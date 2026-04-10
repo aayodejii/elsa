@@ -14,6 +14,7 @@ import FaceEnhancePanel from "@/components/sidebar/FaceEnhancePanel";
 import EffectsPanel from "@/components/sidebar/EffectsPanel";
 import DenoiserPanel from "@/components/sidebar/DenoiserPanel";
 import DarkCirclesPanel from "@/components/sidebar/DarkCirclesPanel";
+import BlemishPanel from "@/components/sidebar/BlemishPanel";
 import BatchPanel from "@/components/batch/BatchPanel";
 import DropZone from "@/components/upload/DropZone";
 import { useEditorStore } from "@/store/editorStore";
@@ -81,6 +82,7 @@ export default function EditorShell() {
             backgroundPanel={<BackgroundPanel />}
             faceEnhancePanel={<FaceEnhancePanel />}
             darkCirclesPanel={<DarkCirclesPanel />}
+            blemishPanel={<BlemishPanel />}
             manualAdjustPanel={<ManualAdjustPanel />}
             effectsPanel={<EffectsPanel />}
             denoiserPanel={<DenoiserPanel />}
