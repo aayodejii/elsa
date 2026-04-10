@@ -117,12 +117,12 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
         for (const k of Object.keys(patch) as Array<keyof EditorSettings>) {
           const v = patch[k];
           if (v !== undefined && typeof v === "object" && !Array.isArray(v)) {
-            (merged as Record<string, unknown>)[k] = {
+            ((merged as unknown) as Record<string, unknown>)[k] = {
               ...(img.settings[k] as object),
               ...(v as object),
             };
           } else if (v !== undefined) {
-            (merged as Record<string, unknown>)[k] = v;
+            ((merged as unknown) as Record<string, unknown>)[k] = v;
           }
         }
         const trimmed = img.settingsHistory.slice(0, img.historyIndex + 1);
