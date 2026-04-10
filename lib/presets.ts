@@ -26,6 +26,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
   {
@@ -45,6 +46,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
   {
@@ -64,6 +66,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
   {
@@ -83,6 +86,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
   {
@@ -102,6 +106,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
   {
@@ -121,6 +126,7 @@ export const PRESETS: Preset[] = [
       exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
       darkCircles: { enabled: false, strength: 50 },
       wrinkleSmooth: { enabled: false, strength: 50 },
+      blemishRemoval: { enabled: false, spots: [] },
     },
   },
 ];

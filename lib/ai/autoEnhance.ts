@@ -78,6 +78,7 @@ export function computeAutoEnhanceSettings(imageId: string): Partial<EditorSetti
     denoiser: { enabled: false, strength: 50 },
     darkCircles: { enabled: false, strength: 50 },
     wrinkleSmooth: { enabled: false, strength: 50 },
+    blemishRemoval: { enabled: false, spots: [] },
     faceEnhance: {
       enabled: hasSkin,
       brightness: hasSkin ? 25 : 0,
