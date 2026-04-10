@@ -12,6 +12,9 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
   const activeImageId = useEditorStore((s) => s.activeImageId);
   const activeImage = useEditorStore((s) => s.images.find((i) => i.id === s.activeImageId));
   const compareMode = useEditorStore((s) => s.compareMode);
+  const blemishMode = useEditorStore((s) => s.blemishMode);
+  const blemishRadius = useEditorStore((s) => s.blemishRadius);
+  const addBlemishSpot = useEditorStore((s) => s.addBlemishSpot);
 
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -103,6 +106,20 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
     isDragging.current = false;
   }, []);
 
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!blemishMode || !activeImageId || !activeImage || compareMode) return;
+      const canvas = displayRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const normalizedX = (e.clientX - rect.left) / rect.width;
+      const normalizedY = (e.clientY - rect.top) / rect.height;
+      const normalizedRadius = blemishRadius / activeImage.width;
+      addBlemishSpot(activeImageId, normalizedX, normalizedY, normalizedRadius);
+    },
+    [blemishMode, activeImageId, activeImage, compareMode, blemishRadius, addBlemishSpot]
+  );
+
   if (!activeImage) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -110,6 +127,8 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
       </div>
     );
   }
+
+  const spots = activeImage.settings.blemishRemoval.spots;
 
   return (
     <div
@@ -132,16 +151,35 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
           height: activeImage.height,
           transform: `scale(${zoom})`,
           transformOrigin: "center center",
-          cursor: compareMode ? "ew-resize" : "default",
+          cursor: compareMode ? "ew-resize" : blemishMode ? "crosshair" : "default",
         }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
+        onClick={handleClick}
       >
         <canvas
           ref={displayRef}
           style={{ imageRendering: zoom > 2 ? "pixelated" : "auto", display: "block" }}
         />
+
+        {blemishMode && spots.map((spot, i) => {
+          const r = Math.max(3, Math.round(spot.radius * activeImage.width));
+          const diameter = r * 2;
+          return (
+            <div
+              key={i}
+              className="absolute pointer-events-none rounded-full border-2 border-white/70"
+              style={{
+                left: spot.x * activeImage.width - r,
+                top: spot.y * activeImage.height - r,
+                width: diameter,
+                height: diameter,
+                boxShadow: "0 0 0 1px rgba(0,0,0,0.4)",
+              }}
+            />
+          );
+        })}
 
         {compareMode && (
           <>
