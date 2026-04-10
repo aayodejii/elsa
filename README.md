@@ -16,6 +16,22 @@ A browser-based AI portrait photo editor. All processing runs client-side with n
 
 **Color Grading:** Temperature, tint, shadows, midtones, and highlights controls all processed in a single Web Worker pass.
 
+**Dark Circle Removal:** Brightens and desaturates the under-eye area using landmark-guided ellipse masks with radial falloff.
+
+**Wrinkle Smoothing:** Frequency-separation smoothing applied to forehead and nasolabial zones detected via facial landmarks.
+
+**Blemish Healing:** Click any spot to heal it. The tool finds the nearest clean-skin patch in the surrounding annulus and blends it in with Gaussian falloff. Fully undoable.
+
+**Vignette:** Radial darkening composite applied post-processing.
+
+**Film Grain:** Deterministic per-pixel noise (Park-Miller LCG) with adjustable strength and grain size.
+
+**Denoiser:** Variance-based adaptive smoothing that flattens noisy flat areas while preserving edges.
+
+**Background Color / Gradient Fill:** Replace the background with a solid color or a two-stop linear gradient at any angle, keeping the subject sharp.
+
+**Export Controls:** Set JPEG quality and target output dimensions (with aspect-ratio lock) before downloading.
+
 **Manual Adjustments:** Brightness, contrast, saturation, hue, and sharpness sliders.
 
 **Presets:** Six built-in looks (Natural, Studio, Magazine, Soft Glow, B&W, Clean) plus the ability to save your own custom presets.
