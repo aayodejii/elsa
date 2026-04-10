@@ -8,6 +8,7 @@ import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
 import { buildSkinMask, buildBlurredCopy, buildWrinkleMask } from "@/lib/ai/skinRetouch";
 import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur, applyBackgroundFill } from "@/lib/ai/segmentation";
 import { applyFaceBrightening, applyEyeEnhancement, applyTeethWhitening, applyDarkCircleRemoval } from "@/lib/ai/faceEnhance";
+import { applyBlemishHealing } from "@/lib/ai/blemishRemoval";
 
 function isManualDefault(m: EditorSettings["manual"]) {
   return (
@@ -285,6 +286,11 @@ export function useImageProcessor() {
           } catch (err) {
             console.warn("Denoiser failed, skipping:", err);
           }
+        }
+
+        // Step 7a: blemish removal
+        if (settings.blemishRemoval.enabled && settings.blemishRemoval.spots.length > 0) {
+          applyBlemishHealing(canvas, settings.blemishRemoval.spots);
         }
 
         // Step 8: vignette (main thread — radial gradient composite)
