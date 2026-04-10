@@ -1,3 +1,9 @@
+export interface BlemishSpot {
+  x: number;      // 0..1 normalized
+  y: number;      // 0..1 normalized
+  radius: number; // fraction of image width
+}
+
 export interface EditorSettings {
   skinRetouch: {
     enabled: boolean;
@@ -10,9 +16,9 @@ export interface EditorSettings {
   background: {
     mode: "none" | "remove" | "blur" | "color" | "gradient";
     blurRadius: number; // 0–20
-    fillColor: string;     // hex, used when mode = "color"
-    gradientStart: string; // hex, used when mode = "gradient"
-    gradientEnd: string;   // hex, used when mode = "gradient"
+    fillColor: string;
+    gradientStart: string;
+    gradientEnd: string;
     gradientAngle: number; // 0–360 degrees
   };
   faceEnhance: {
@@ -27,8 +33,8 @@ export interface EditorSettings {
     saturation: number;   // -100 to 100
     sharpness: number;    // 0–100
     hue: number;          // -180 to 180
-    temperature: number;  // -100 to 100 (cool → warm)
-    tint: number;         // -100 to 100 (green → magenta)
+    temperature: number;  // -100 to 100
+    tint: number;         // -100 to 100
     shadows: number;      // -100 to 100
     midtones: number;     // -100 to 100
     highlights: number;   // -100 to 100
@@ -47,7 +53,7 @@ export interface EditorSettings {
     strength: number; // 0–100
   };
   exportSettings: {
-    jpegQuality: number;       // 0–100
+    jpegQuality: number;
     outputWidth: number | null;
     outputHeight: number | null;
   };
@@ -58,6 +64,10 @@ export interface EditorSettings {
   wrinkleSmooth: {
     enabled: boolean;
     strength: number; // 0–100
+  };
+  blemishRemoval: {
+    enabled: boolean;
+    spots: BlemishSpot[];
   };
 }
 
@@ -87,4 +97,5 @@ export const DEFAULT_SETTINGS: EditorSettings = {
   exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
   darkCircles: { enabled: false, strength: 50 },
   wrinkleSmooth: { enabled: false, strength: 50 },
+  blemishRemoval: { enabled: false, spots: [] },
 };
