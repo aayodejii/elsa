@@ -51,6 +51,14 @@ export interface EditorSettings {
     outputWidth: number | null;
     outputHeight: number | null;
   };
+  darkCircles: {
+    enabled: boolean;
+    strength: number; // 0–100
+  };
+  wrinkleSmooth: {
+    enabled: boolean;
+    strength: number; // 0–100
+  };
 }
 
 export interface ImageItem {
@@ -77,4 +85,6 @@ export const DEFAULT_SETTINGS: EditorSettings = {
   grain: { enabled: false, strength: 30, size: 1 },
   denoiser: { enabled: false, strength: 50 },
   exportSettings: { jpegQuality: 88, outputWidth: null, outputHeight: null },
+  darkCircles: { enabled: false, strength: 50 },
+  wrinkleSmooth: { enabled: false, strength: 50 },
 };
