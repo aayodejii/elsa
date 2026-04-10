@@ -128,8 +128,6 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
     );
   }
 
-  const spots = activeImage.settings.blemishRemoval.spots;
-
   return (
     <div
       ref={containerRef}
@@ -162,24 +160,6 @@ export default function CanvasPreview({ zoom, onZoomChange }: CanvasPreviewProps
           ref={displayRef}
           style={{ imageRendering: zoom > 2 ? "pixelated" : "auto", display: "block" }}
         />
-
-        {blemishMode && spots.map((spot, i) => {
-          const r = Math.max(3, Math.round(spot.radius * activeImage.width));
-          const diameter = r * 2;
-          return (
-            <div
-              key={i}
-              className="absolute pointer-events-none rounded-full border-2 border-white/70"
-              style={{
-                left: spot.x * activeImage.width - r,
-                top: spot.y * activeImage.height - r,
-                width: diameter,
-                height: diameter,
-                boxShadow: "0 0 0 1px rgba(0,0,0,0.4)",
-              }}
-            />
-          );
-        })}
 
         {compareMode && (
           <>
