@@ -62,6 +62,7 @@ interface SidebarPanelProps {
   freqSepPanel: ReactNode;
   backgroundPanel: ReactNode;
   faceEnhancePanel: ReactNode;
+  darkCirclesPanel: ReactNode;
   manualAdjustPanel: ReactNode;
   effectsPanel: ReactNode;
   denoiserPanel: ReactNode;
@@ -73,6 +74,7 @@ export default function SidebarPanel({
   freqSepPanel,
   backgroundPanel,
   faceEnhancePanel,
+  darkCirclesPanel,
   manualAdjustPanel,
   effectsPanel,
   denoiserPanel,
@@ -154,6 +156,20 @@ export default function SidebarPanel({
         badge="ai"
       >
         <ErrorBoundary label="face">{faceEnhancePanel}</ErrorBoundary>
+      </AccordionSection>
+
+      <AccordionSection
+        title="Retouch"
+        icon={
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 22c-4.97 0-9-2.69-9-6 0-1.5.75-2.88 2-3.9" />
+            <path d="M12 22c4.97 0 9-2.69 9-6 0-1.5-.75-2.88-2-3.9" />
+            <circle cx="12" cy="8" r="4" />
+          </svg>
+        }
+        badge="ai"
+      >
+        <ErrorBoundary label="retouch">{darkCirclesPanel}</ErrorBoundary>
       </AccordionSection>
 
       <AccordionSection
