@@ -44,6 +44,8 @@ export async function detectFaceLandmarks(
     jawPoints: pts.slice(0, 17).map(toXY),
     leftEye: pts.slice(36, 42).map(toXY),
     rightEye: pts.slice(42, 48).map(toXY),
+    leftBrow: pts.slice(17, 22).map(toXY),
+    rightBrow: pts.slice(22, 27).map(toXY),
     outerLip: pts.slice(48, 60).map(toXY),
     innerLip: pts.slice(60, 68).map(toXY),
     nose: pts.slice(27, 36).map(toXY),
