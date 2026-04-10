@@ -5,9 +5,9 @@ import { useEditorStore, canvasRegistry, bitmapRegistry } from "@/store/editorSt
 import { useCanvasWorker } from "./useCanvasWorker";
 import { EditorSettings } from "@/types/editor";
 import { detectFaceLandmarks } from "@/lib/ai/faceDetection";
-import { buildSkinMask, buildBlurredCopy } from "@/lib/ai/skinRetouch";
+import { buildSkinMask, buildBlurredCopy, buildWrinkleMask } from "@/lib/ai/skinRetouch";
 import { getSegmentationMask, applyBackgroundRemove, applyBackgroundBlur, applyBackgroundFill } from "@/lib/ai/segmentation";
-import { applyFaceBrightening, applyEyeEnhancement, applyTeethWhitening } from "@/lib/ai/faceEnhance";
+import { applyFaceBrightening, applyEyeEnhancement, applyTeethWhitening, applyDarkCircleRemoval } from "@/lib/ai/faceEnhance";
 
 function isManualDefault(m: EditorSettings["manual"]) {
   return (
@@ -122,6 +122,18 @@ export function useImageProcessor() {
           setProcessingProgress(70);
         }
 
+        // Step 3a: dark circle removal (reuses cached landmarks)
+        if (settings.darkCircles.enabled && settings.darkCircles.strength > 0) {
+          try {
+            const landmarks = await withTimeout(
+              detectFaceLandmarks(canvas, imageId), 30_000, "Face detection (dark circles)"
+            );
+            if (landmarks) applyDarkCircleRemoval(canvas, landmarks, settings.darkCircles.strength);
+          } catch (err) {
+            console.warn("Dark circle removal failed, skipping:", err);
+          }
+        }
+
         // Step 4: skin retouching
         if (settings.skinRetouch.enabled && settings.skinRetouch.strength > 0) {
           try {
@@ -185,6 +197,40 @@ export function useImageProcessor() {
             console.warn("Frequency separation failed, skipping:", err);
           }
           setProcessingProgress(92);
+        }
+
+        // Step 5a: wrinkle smoothing (FREQ_SEP on forehead + nasolabial zones)
+        if (settings.wrinkleSmooth.enabled && settings.wrinkleSmooth.strength > 0) {
+          try {
+            const landmarks = await withTimeout(
+              detectFaceLandmarks(canvas, imageId), 30_000, "Face detection (wrinkle smooth)"
+            );
+            if (landmarks) {
+              const maskData = buildWrinkleMask(canvas.width, canvas.height, landmarks);
+              const s = settings.wrinkleSmooth.strength;
+              const largeRadius = Math.round(3 + (s / 100) * 10);
+              const makeBlur = (radius: number) => {
+                const tmp = document.createElement("canvas");
+                tmp.width = canvas.width; tmp.height = canvas.height;
+                const tCtx = tmp.getContext("2d")!;
+                tCtx.filter = `blur(${radius}px)`;
+                tCtx.drawImage(canvas, 0, 0);
+                return tCtx.getImageData(0, 0, canvas.width, canvas.height);
+              };
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const result = await runWorker({
+                type: "FREQ_SEP",
+                imageData,
+                blurSmall: makeBlur(2),
+                blurLarge: makeBlur(largeRadius),
+                maskData,
+                strength: s,
+              });
+              ctx.putImageData(result, 0, 0);
+            }
+          } catch (err) {
+            console.warn("Wrinkle smoothing failed, skipping:", err);
+          }
         }
 
         // Step 6: apply manual filters if any are non-default
