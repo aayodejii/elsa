@@ -25,6 +25,8 @@ interface EditorStore {
   isProcessing: boolean;
   processingProgress: number;
   compareMode: boolean;
+  blemishMode: boolean;
+  blemishRadius: number;
 
   addImages: (files: File[]) => Promise<void>;
   setActiveImage: (id: string) => void;
@@ -34,6 +36,10 @@ interface EditorStore {
   setProcessingProgress: (progress: number) => void;
   setIsProcessing: (v: boolean) => void;
   setCompareMode: (v: boolean) => void;
+  setBlemishMode: (v: boolean) => void;
+  setBlemishRadius: (r: number) => void;
+  addBlemishSpot: (imageId: string, x: number, y: number, radius: number) => void;
+  clearBlemishSpots: (imageId: string) => void;
   undo: (id: string) => EditorSettings | null;
   redo: (id: string) => EditorSettings | null;
   resetImage: (id: string) => void;
@@ -63,6 +69,8 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   isProcessing: false,
   processingProgress: 0,
   compareMode: false,
+  blemishMode: false,
+  blemishRadius: 20,
 
   addImages: async (files) => {
     const newItems: ImageItemState[] = [];
@@ -155,6 +163,21 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   setProcessingProgress: (progress) => set({ processingProgress: progress }),
   setIsProcessing: (v) => set({ isProcessing: v }),
   setCompareMode: (v) => set({ compareMode: v }),
+  setBlemishMode: (v) => set({ blemishMode: v }),
+  setBlemishRadius: (r) => set({ blemishRadius: r }),
+
+  addBlemishSpot: (imageId, x, y, radius) => {
+    const img = get().images.find((i) => i.id === imageId);
+    if (!img) return;
+    const spots = [...img.settings.blemishRemoval.spots, { x, y, radius }];
+    get().updateSettings(imageId, { blemishRemoval: { ...img.settings.blemishRemoval, spots } });
+  },
+
+  clearBlemishSpots: (imageId) => {
+    const img = get().images.find((i) => i.id === imageId);
+    if (!img) return;
+    get().updateSettings(imageId, { blemishRemoval: { ...img.settings.blemishRemoval, spots: [] } });
+  },
 
   undo: (id) => {
     const images = get().images;
